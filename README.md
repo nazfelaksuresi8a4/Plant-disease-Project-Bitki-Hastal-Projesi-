@@ -33,9 +33,11 @@
 |*Underfitting durumu: Negatif*                                        |
 |----------------------------------------------------------------------|
 
-![WhatsApp Image 2026-01-03 at 18 02 08](https://github.com/user-attachments/assets/9c8be288-62cf-47ac-ab39-cf8b24776835)
-
 Model eğitim grafikleri:
+
+
+![WhatsApp Image 2026-01-03 at 18 02 08](https://github.com/user-attachments/assets/72885b2d-575c-4aa8-9565-2de154a5bcdd)
+
 
 
                           MODEL ÖZELLİKLERİ
