@@ -40,3 +40,8 @@
 | **Total Parameters**             |                         | **649,541** |
 | **Trainable Parameters**         |                         | **216,513** |
 | **Non-trainable Parameters**     |                         | **0** |
+
+#**Not:** Total params ile trainable + non-trainable params’in farklı görünmesinin sebebi optimizer’dır. 
+Özellikle Adam optimizer, her trainable parametre için 2 ek değişken (momentum ve RMS) tutar. 
+Bu yüzden trainable parametreler 216,513 olmasına rağmen optimizer state ile birlikte total params 649,541 olarak raporlanır. 
+Non-trainable parametre 0’dır çünkü modelde frozen layer veya BatchNormalization yoktur.
