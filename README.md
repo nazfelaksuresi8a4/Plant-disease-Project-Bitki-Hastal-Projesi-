@@ -1,37 +1,20 @@
- ______________________________________________________________________
-/                     LEAF SCANNER PROJESİ DETAYLARI                  \ 
-|----------------------------------------------------------------------|
-|*Kullanılan DATASET: PlantVillage*                                    |
-|----------------------------------------------------------------------|
-|*Dataset urlsi: https://www.kaggle.com/datasets/emmarex/plantdisease* |
-|----------------------------------------------------------------------|
-|*Proje ismi: Leaf Scanner*                                            |
-|----------------------------------------------------------------------|
-|*Kullanılan AI Modeli: Leaf Model*                                    |
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*Kullanılan Modelin sinir ağı Türü: CNN(Convesnsional Neural Networks*|
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*Kullanılan AI Modelinin ismi: Leaf Model*                            |
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*Hazır Modelmi: Negatif*                                              |
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*0-dan eğitilen Modelmi: Olumlu*                                      |
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*Model Türü: SEQUENTİAl(Sıralı model)*                                |
-|----------------------------------------------------------------------|
-|*Proje geliştiricisi: Ahmet efe Y-*                                   |
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*Overfitting durumu: Negatif*                                         |
-|----------------------------------------------------------------------|
-|----------------------------------------------------------------------|
-|*Underfitting durumu: Negatif*                                        |
-|----------------------------------------------------------------------|
+## LEAF SCANNER PROJESİ DETAYLARI
+
+| Özellik                          | Açıklama |
+|----------------------------------|----------|
+| Kullanılan Dataset               | PlantVillage |
+| Dataset URL'si                   | https://www.kaggle.com/datasets/emmarex/plantdisease |
+| Proje İsmi                       | Leaf Scanner |
+| Kullanılan AI Modeli             | Leaf Model |
+| Modelin Sinir Ağı Türü           | CNN (Convolutional Neural Networks) |
+| Kullanılan AI Modelinin İsmi     | Leaf Model |
+| Hazır Model Mi?                  | Hayır |
+| 0'dan Eğitilen Model Mi?         | Evet |
+| Model Türü                       | Sequential (Sıralı Model) |
+| Proje Geliştiricisi              | Ahmet Efe Y- |
+| Overfitting Durumu               | Yok |
+| Underfitting Durumu              | Yok |
+
 
 Model eğitim grafikleri:
 <img width="545" height="307" alt="image" src="https://github.com/user-attachments/assets/96180f8b-1dcf-423e-81ff-0a15421cf046" />
