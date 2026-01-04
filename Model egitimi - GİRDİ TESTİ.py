@@ -57,8 +57,12 @@ model = Sequential(    #Sıralı model oluşturduk
             Conv2D(filters=64, kernel_size=(2, 2), strides=(1, 1), activation='relu'),  #64 filtrelik konvensiyonel sinir ağı ve (2,2)'lik pooling
             MaxPooling2D(2, 2),
 
+            Conv2D(filters=128, kernel_size=(2, 2), strides=(1, 1), activation='relu'),
+                                                                                        # 128 filtrelik konvensiyonel sinir ağı ve (2,2)'lik pooling
+            MaxPooling2D(2, 2),
+
             Flatten(),    #konvesnsiyonel ağın 2D boyutunu 1D vektöre indirgemek için kullanılan Flatten() fonksiyonu
-            Dense(64,activation='relu'),   #128 unitelik düğüm ve relu aktivasyon fonksiyonu
+            Dense(8,activation='relu'),   #128 unitelik düğüm ve relu aktivasyon fonksiyonu
             Dense(1,activation='sigmoid')   #0-1 aralığındaki SİGMOİD fonksiyonu çıktısı ve 1 unitelik düğüm
             ]
 )
@@ -128,5 +132,7 @@ pred = model.predict(x=batch_dim, #İlk başta belirttiğimiz görseli modele ve
 print(model.summary())
 
 print(pred[0][0]) # Modelin sonucuna ulaşmak için
+
+#NOT: BU KODDAN SONRA MODEL leaf_model.h5 OLARAK KAYDEDİLMİŞTİR VE AKTİF OLARAK EGİTİME DEVAM EDİLMEK ÜZERE HALEN GELİŞTİRİLİYOR
 
 #NOT: BU KODDAN SONRA MODEL leaf_model.h5 OLARAK KAYDEDİLMİŞTİR VE AKTİF OLARAK EGİTİME DEVAM EDİLMEK ÜZERE HALEN GELİŞTİRİLİYOR
