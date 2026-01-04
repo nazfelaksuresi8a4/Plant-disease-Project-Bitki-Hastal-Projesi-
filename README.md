@@ -1,33 +1,50 @@
-LEAF SCANNER PROJESİ DETAYLARI
+ ______________________________________________________________________
+/                     LEAF SCANNER PROJESİ DETAYLARI                  \ 
+|----------------------------------------------------------------------|
+|*Kullanılan DATASET: PlantVillage*                                    |
+|----------------------------------------------------------------------|
+|*Dataset urlsi: https://www.kaggle.com/datasets/emmarex/plantdisease* |
+|----------------------------------------------------------------------|
+|*Proje ismi: Leaf Scanner*                                            |
+|----------------------------------------------------------------------|
+|*Kullanılan AI Modeli: Leaf Model*                                    |
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*Kullanılan Modelin sinir ağı Türü: CNN(Convesnsional Neural Networks*|
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*Kullanılan AI Modelinin ismi: Leaf Model*                            |
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*Hazır Modelmi: Negatif*                                              |
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*0-dan eğitilen Modelmi: Olumlu*                                      |
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*Model Türü: SEQUENTİAl(Sıralı model)*                                |
+|----------------------------------------------------------------------|
+|*Proje geliştiricisi: Ahmet efe Y-*                                   |
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*Overfitting durumu: Negatif*                                         |
+|----------------------------------------------------------------------|
+|----------------------------------------------------------------------|
+|*Underfitting durumu: Negatif*                                        |
+|----------------------------------------------------------------------|
 
-Kullanılan Dataset: PlantVillage
-Dataset URL'si: PlantDisease Dataset - Kaggle
+Model eğitim grafikleri:
+<img width="545" height="307" alt="image" src="https://github.com/user-attachments/assets/96180f8b-1dcf-423e-81ff-0a15421cf046" />
 
-Proje İsmi: Leaf Scanner
-Kullanılan AI Modeli: Leaf Model
-Kullanılan Modelin Sinir Ağı Türü: CNN (Convolutional Neural Networks)
-Kullanılan AI Modelinin İsmi: Leaf Model
-Hazır Model Mi?: Hayır
-0'dan Eğitilen Model Mi?: Evet
-Model Türü: Sıralı Model (Sequential)
-Proje Geliştiricisi: Ahmet Efe Y-
-Overfitting Durumu: Yok
-Underfitting Durumu: Yok
-
-Model Eğitim Grafikleri:
-
-<img width="1366" height="671" alt="image" src="https://github.com/user-attachments/assets/2ee85f3d-e9e7-40e4-932a-cc94f182f82c" />
-
-
-MODEL ÖZELLİKLERİ
-
-Layer (Type)	Output Shape	Param #
-Conv2D	(None, 223, 223, 16)	208
-MaxPooling2D	(None, 111, 111, 16)	0
-Conv2D_1	(None, 110, 110, 32)	2,080
-MaxPooling2D_1	(None, 55, 55, 32)	0
-Conv2D_2	(None, 54, 54, 64)	8,256
-MaxPooling2D_2	(None, 27, 27, 64)	0
-Flatten	(None, 46,656)	0
-Dense	(None, 128)	5,972,096
-Dense_1	(None, 1)	129
+                          MODEL ÖZELLİKLERİ
+| **Layer (type)**                  | **Output Shape**        | **Param #**   |
+|------------------------------------|-------------------------|---------------|
+| **conv2d (Conv2D)**               | (None, 223, 223, 16)     | 208           |
+| **max_pooling2d (MaxPooling2D)**  | (None, 111, 111, 16)     | 0             |
+| **conv2d_1 (Conv2D)**             | (None, 110, 110, 32)     | 2,080         |
+| **max_pooling2d_1 (MaxPooling2D)**| (None, 55, 55, 32)       | 0             |
+| **conv2d_2 (Conv2D)**             | (None, 54, 54, 64)       | 8,256         |
+| **max_pooling2d_2 (MaxPooling2D)**| (None, 27, 27, 64)       | 0             |
+| **flatten (Flatten)**             | (None, 46656)            | 0             |
+| **dense (Dense)**                 | (None, 128)             | 5,972,096     |
+| **dense_1 (Dense)**               | (None, 1)               | 129           |
