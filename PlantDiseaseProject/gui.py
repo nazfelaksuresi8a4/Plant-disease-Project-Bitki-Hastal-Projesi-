@@ -1,3 +1,4 @@
+import artifical_intelligence
 import artifical_intelligence as ai_side
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -7,6 +8,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 import winsound as ws
 import sys as _s
+import asyncio
 
 import file_actions
 import image_processing as ip_side
@@ -14,26 +16,29 @@ import file_actions as tdg
 
 
 class ThreadSide(QObject):
-    filesignal = pyqtSignal(str, str)
+    ifilesignal = pyqtSignal(str,int)
+    efilesignal = pyqtSignal(str,int)
 
     def __init__(self, internals, externals):
         super().__init__()
         self.internal_fs, self.external_fs = internals, externals
 
-    def emitFiles(self):
-        print('emitted')
-        if len(self.internal_fs) == len(self.external_fs):
-            for ifile, efile in zip(self.internal_fs, self.external_fs):
-                self.filesignal.emit(ifile, efile)
+    async def emitInternals(self):
+        for internal_file in self.internal_fs:
+            #if isinstance(internal_file,str) and internal_file.endswith('.h5'):
+            self.ifilesignal.emit(internal_file,0)
 
-        else:
-            if len(self.internal_fs) >= 1:
-                for ifile in self.internal_fs:
-                    self.filesignal.emit(ifile, 'x')
+    async def emitExternals(self):
+        for external_file in self.external_fs:
+            #if isinstance(external_file,str) and external_file.endswith('.h5'):
+            self.efilesignal.emit(external_file,1)
 
-            if len(self.external_fs) >= 1:
-                for efile in self.external_fs:
-                    self.filesignal.emit('x', efile)
+    async def igniter(self):
+        await asyncio.gather(self.emitInternals(),self.emitExternals())
+
+    def mainIgniter(self):
+        if self.internal_fs and self.internal_fs:
+            asyncio.run(self.igniter())
 
 
 class MainGui(QMainWindow):
@@ -46,11 +51,15 @@ class MainGui(QMainWindow):
         self.threadPool.moveToThread(self.threadObject)
 
         '''SIGNALS'''
-        self.filesignal = self.threadPool.filesignal
+        self.ifilesignal = self.threadPool.ifilesignal
+        self.efilesignal = self.threadPool.efilesignal
 
         '''ANA DEGİSKENLER'''
         self.current_canvas_matrix = None
         self.current_selected_canvas = None
+
+        self.IPath,self.IName,self.IType = None,None,None
+        self.EPath,self.EName,self.EType = None,None,None
 
         '''GÖRSEL İSLEYİCİ'''
         self.image_processer = ip_side.İmageProcesser()
@@ -89,7 +98,7 @@ class MainGui(QMainWindow):
         self.external_model_select_label = QLabel(text='Harici Model Seçme Sistemi Ayarı')
         self.model_inspecting_monitor_label = QLabel(text='Model İnceleme Monitörü')
         self.model_inspect_preview_label = QLabel(
-            text='Model adı: Bilinmiyor\nModelin bellekte kapsadığı yer: Bilinmiyor')
+            text='Model adı: Bilinmiyor\nModel yolu: Bilinmiyor\nModel türü: Bilinmiyor')
         self.model_techinc_informations_label = QLabel(text='Modelin Teknik Detayları')
         self.file_sys_external_path_label = QLabel(text='Harici Dosya Sistemi Yolu')
         self.file_sys_internal_path_label = QLabel(text='Dahili Dosya Sistemi Yolu')
@@ -97,6 +106,7 @@ class MainGui(QMainWindow):
         self.l1.setAlignment(Qt.AlignCenter)
         self.l2.setAlignment(Qt.AlignCenter)
         self.l3.setAlignment(Qt.AlignCenter)
+
         self.internal_model_selecet_label.setAlignment(Qt.AlignCenter)
         self.external_model_select_label.setAlignment(Qt.AlignCenter)
         self.model_inspecting_monitor_label.setAlignment(Qt.AlignCenter)
@@ -109,32 +119,34 @@ class MainGui(QMainWindow):
         self.define_internal_model_btn = QPushButton(text='Dahili modeli tanımla')
         self.inspect_internal_model_btn = QPushButton(text='Dahili modeli incele')
 
-        self.define_file_system_internal_path = QPushButton(text='Dahili Dosya Sistemi Yolunu Tanımla')
-        self.define_file_system_external_path = QPushButton(text='Harici Dosya Sistemi Yolunu Tanımla')
-
         self.define_external_model_btn = QPushButton(text='Harici modeli tanımla')
         self.inspect_external_model_btn = QPushButton(text='Harici modeli incele')
         self.define_external_file_system_path = QPushButton(text='Dosya sistemi yolunu tanımla')
 
         self.define_all_models_btn = QPushButton(text='Modelleri tanımla')
+        self.clear_all_models_btn = QPushButton(text='Model listesini temizle')
 
-        self.reset_external_path = QPushButton('Yolu Sıfırla')
-        self.reset_internal_path = QPushButton('Yolu Sıfırla')
+        self.reset_internal_path = QPushButton('Dahili Yolu Sıfırla')
+        self.reset_external_path = QPushButton('Harici Yolu Sıfırla')
 
         '''EKSTRA WİDGETLAR'''
         self.internal_model_file_system_model = QListWidget()
         self.external_model_file_system_model = QListWidget()
+
         self.enter_external_path = QLineEdit()
         self.enter_internal_path = QLineEdit()
         self.enter_external_path.setPlaceholderText('Harici Modelin Yolunu Girin...')
         self.enter_internal_path.setPlaceholderText('Dahili Modelin Yolunu girin....')
+        self.enter_external_path.setText('models/ProgramInterfaceModelsExternal')
+        self.enter_internal_path.setText('models/ProgramInterfaceModelsInternal')
 
-        self.model_techinc_informations = QListWidget()
+
+        self.model_techinc_informations = QTextEdit()
+        self.model_techinc_informations.setReadOnly(True)
 
         self.internal_gui_widgets = [[self.l1,
                                       self.define_internal_model_btn,
                                       self.inspect_internal_model_btn,
-                                      self.define_file_system_internal_path,
                                       self.internal_model_file_system_model],
                                      [self.l2,
                                       vertical_splt_sec_v4x1_1_horizontal_splitter_1,
@@ -142,12 +154,12 @@ class MainGui(QMainWindow):
                                       self.model_inspect_preview_label,
                                       self.model_techinc_informations_label,
                                       self.model_techinc_informations,
-                                      self.define_all_models_btn
+                                      self.define_all_models_btn,
+                                      self.clear_all_models_btn,
                                       ],
                                      [self.l3,
                                       self.define_external_model_btn,
                                       self.inspect_external_model_btn,
-                                      self.define_external_file_system_path,
                                       self.external_model_file_system_model]]
 
         vertical_splt_sec_v4x1_1_vertical_splitter_1.addWidget(self.external_model_select_label)
@@ -273,12 +285,55 @@ class MainGui(QMainWindow):
         self.clear_canvas_btn.clicked.connect(self.clear_canvas)
         self.add_img_btn.clicked.connect(self.add_img_canvas)
         self.add_img_lst_btn.clicked.connect(self.add_lst_img)
+        self.define_internal_model_btn.clicked.connect(self.define_internal_model)
+        self.inspect_internal_model_btn.clicked.connect(lambda : self.inspectModel(self.IPath,self.IName,self.IType))
+        self.inspect_external_model_btn.clicked.connect(lambda : self.inspectModel(self.EPath,self.EName,self.EType))
         self.define_all_models_btn.clicked.connect(self.addModels)
+        self.clear_all_models_btn.clicked.connect(self.clearModels)
+        self.reset_internal_path.clicked.connect(self.resetIPath)
+        self.reset_external_path.clicked.connect(self.resetEPath)
 
         '''SIGNAL-SLOTS-PYQTSİGNALS'''
-        self.filesignal.connect(self.addModelsWithList)
+        self.ifilesignal.connect(self.addModelsWithList)
+        self.efilesignal.connect(self.addModelsWithList)
 
         self.setCentralWidget(self.tabWidget)
+
+    def inspectModel(self,mpath,mname,mtype):
+        output,code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(':')[1])
+
+        if code == 0:
+            if isinstance(output,str):
+                self.model_techinc_informations.setText(output)
+
+            else:
+                print(type(output))
+
+        elif code == 1:
+            pass
+
+        elif code == 2:
+            pass
+
+        else:
+            pass
+
+    def define_internal_model(self):
+        curr_selected = self.internal_model_file_system_model.selectedItems()
+
+        if len(curr_selected) >= 1:
+            mtype,mname,mpath = curr_selected[len(curr_selected) - 1].text().split('\n')
+            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')  
+            self.file_sys_internal_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
+
+        else:
+            pass
+
+    def resetIPath(self):
+        self.enter_internal_path.setText('models\ProgramInterfaceModelsInternal')
+
+    def resetEPath(self):
+        self.enter_internal_path.setText('models\ProgramInterfaceModelsExternal')
 
     def clear_canvas(self):
         if self.dial.value() == 1:
@@ -368,61 +423,56 @@ class MainGui(QMainWindow):
         self.threadPool = ThreadSide(internals, externals)
         self.threadObject = QThread(self)
 
-        self.filesignal = self.threadPool.filesignal
-        self.filesignal.connect(self.addModelsWithList)
+        self.ifilesignal = self.threadPool.ifilesignal
+        self.efilesignal = self.threadPool.efilesignal
+        self.ifilesignal.connect(self.addModelsWithList)
+        self.efilesignal.connect(self.addModelsWithList)
 
         self.threadObject.start()
-        self.threadObject.started.connect(self.threadPool.emitFiles)
+        self.threadObject.started.connect(self.threadPool.mainIgniter)
 
     def addModels(self):
-        self.ipath, self.epath = self.enter_internal_path.text(), self.enter_external_path.text()
+        try:
+            self.ipath, self.epath = self.enter_internal_path.text(), self.enter_external_path.text()
 
-        fileClass = file_actions.FileActions('artifical_intelligence', self.ipath, self.epath)
-        internal_models, external_models = fileClass.fileAction()
+            fileClass = file_actions.FileActions('artifical_intelligence', self.ipath, self.epath)
+            internal_models, external_models = fileClass.fileAction()
 
-        if isinstance(internal_models, list) and isinstance(external_models, list):
-            if len(internal_models) >= 1 and len(external_models) >= 1:
-                internal_models = [f'Model türü: Dahili\nModel ismi: {x}\nModel yolu:{self.ipath}\\{x}' for x in
-                                   internal_models]
-                external_models = [f'Model türü: Harici\nModel ismi: {x}\nModel yolu:{self.epath}\\{x}' for x in
-                                   external_models]
+            if isinstance(internal_models, list) and isinstance(external_models, list):
+                if len(internal_models) >= 1 and len(external_models) >= 1:
+                    internal_models = [f'Model türü: Dahili\nModel ismi: {x}\nModel yolu:{self.ipath}\\{x}' for x in
+                                       internal_models]
+                    external_models = [f'Model türü: Harici\nModel ismi: {x}\nModel yolu:{self.epath}\\{x}' for x in
+                                       external_models]
 
-        self.threadIgniter(internal_models, external_models)
+            self.threadIgniter(internal_models, external_models)
+        except:
+            pass
 
-    def addModelsWithList(self, internal_model, external_model):
+    def clearModels(self):
+        self.internal_model_file_system_model.clear()
+        self.external_model_file_system_model.clear()
+        self.model_inspect_preview_label.setText('Model adı: Bilinmiyor\nModel yolu: Bilinmiyor\nModel türü: Bilinmiyor')
+
+    def addModelsWithList(self,file,flag):
         '''listeye ekleme şeylerini kodla adamı hasta etme'''
         print('Xxx')
-        if isinstance(internal_model, str) and isinstance(external_model, str):
-            if len(internal_model) > 6 and len(external_model) > 6:
-                self.Imodel_type, self.Imodel_name, self.Imodel_path = internal_model.split('\n')
-                self.Emodel_type, self.Emodel_name, self.Emodel_path = external_model.split('\n')
+        self.file = file
+        self.flag = flag
 
-                self.ilist_widget_item = QListWidgetItem(f'{self.Imodel_name}\n{self.Imodel_path}\n{self.Imodel_type}')
-                self.elist_widget_item = QListWidgetItem(f'{self.Emodel_name}\n{self.Emodel_path}\n{self.Emodel_type}')
+        if self.flag == 0:
+            if isinstance(self.file,str):
+                self.IType,self.IName,self.IPath = self.file.split('\n')
+                self.listWidgetItemInternal = QListWidgetItem(f'{self.IType}\n{self.IName}\n{self.IPath}')
+                self.listWidgetItemInternal.setTextAlignment(Qt.AlignCenter)
+                self.internal_model_file_system_model.addItem(self.listWidgetItemInternal)
 
-                self.ilist_widget_item.setTextAlignment(Qt.AlignCenter)
-                self.elist_widget_item.setTextAlignment(Qt.AlignCenter)
-
-                self.internal_model_file_system_model.addItem(self.ilist_widget_item)
-                self.external_model_file_system_model.addItem(self.elist_widget_item)
-
-            elif len(internal_model) > 6 and len(external_model) < 6:
-                self.Imodel_type, self.Imodel_name, self.Imodel_path = internal_model.split('\n')
-
-                self.ilist_widget_item = QListWidgetItem(f'{self.Imodel_name}\n{self.Imodel_path}\n{self.Imodel_type}')
-
-                self.ilist_widget_item.setTextAlignment(Qt.AlignCenter)
-
-                self.internal_model_file_system_model.addItem(self.ilist_widget_item)
-
-            elif len(internal_model) < 6 and len(external_model) > 6:
-                self.Emodel_type, self.Emodel_name, self.Emodel_path = external_model.split('\n')
-
-                self.elist_widget_item = QListWidgetItem(f'{self.Emodel_name}\n{self.Emodel_path}\n{self.Emodel_type}')
-
-                self.elist_widget_item.setTextAlignment(Qt.AlignCenter)
-
-                self.external_model_file_system_model.addItem(self.elist_widget_item)
+        if self.flag == 1:
+            if isinstance(self.file,str):
+                self.EType,self.EName,self.EPath = self.file.split('\n')
+                self.listWidgetExternal = QListWidgetItem(f'{self.EType}\n{self.EName}\n{self.EPath}')
+                self.listWidgetExternal.setTextAlignment(Qt.AlignCenter)
+                self.external_model_file_system_model.addItem(self.listWidgetExternal)
 
 
 if __name__ == '__main__':
