@@ -55,15 +55,21 @@ class ArtificalIntelligence:
     def predictModel(self,model,matlike,mode,batch_size):
         artifical_intelligence_model = model
 
-        if artifical_intelligence_model is not None:
-            if matlike is not None:
-                try:
-                    image_matrix = image_processing.İmageProcesser().to_matrix(matlike)
-                    predict_output = artifical_intelligence_model.predict(x=image_matrix,batch_size=batch_size)
+        if mode == 'Hasta-Saglikli Tespiti':
+            if artifical_intelligence_model is not None:
+                if isinstance(artifical_intelligence_model,str):
+                    artifical_intelligence_model = load_model(artifical_intelligence_model)
 
-                    print(predict_output)
+                if matlike is not None:
+                    try:
+                        image_matrix = image_processing.İmageProcesser().to_matrix(matlike,mode='prediction')
+                        predict_output = artifical_intelligence_model.predict(x=image_matrix,batch_size=batch_size)
 
-                    return predict_output
-                except Exception as e:
-                    print(e)
-                    return image_matrix
+                        return predict_output
+                    
+                    except Exception as e:
+                        print(e)
+                        return e
+        
+        elif mode == 'Hastalik Tespiti':
+            return None
