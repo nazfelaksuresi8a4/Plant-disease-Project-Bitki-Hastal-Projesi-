@@ -97,6 +97,7 @@ class MainGui(QMainWindow):
         horizontal_splitter_main.addWidget(vertical_splitter_main)
         horizontal_splitter_main.addWidget(vertical_splitter_second)
         horizontal_splitter_main.addWidget(vertical_splitter_last)
+        #horizontal_splitter_main.addWidget(self.modelPredictionTableWidget)
 
         '''ETİKETLER'''
         self.l1, self.l2, self.l3 = QLabel(text='Dahili Model Seçme Sistemi'), QLabel(
@@ -154,7 +155,7 @@ class MainGui(QMainWindow):
         self.change_model_type = QComboBox()
         self.change_batch_size = QComboBox()
 
-        itemsX, itemsY = ['Hasta-Sağlıklı Tespiti', 'Hastalık Tespiti'], ['Harici', 'Dahili']
+        itemsX, itemsY = ['Hasta-Saglikli Tespiti', 'Hastalik Tespiti'], ['Harici', 'Dahili']
         for itemX, itemY in zip(itemsX, itemsY):
             self.change_analysis_mode.addItem(itemX)
             self.change_model_type.addItem(itemY)
@@ -227,7 +228,8 @@ class MainGui(QMainWindow):
         '''AXES OBJESİNİ ÖZELLESTİRMEK(GÖRSEL GÖSTERİCİ AXESLER)'''
         for axes in range(len(self.axesobj)):
             self.axesobj[axes].set_title('{}. kanvas'.format(axes + 1))
-            self.axesobj[axes].imshow(self.image_processer.to_matrix(self.vector[axes]))
+            self.axesobj[axes].imshow(self.image_processer.to_matrix(img=self.vector[axes],
+                                                                     mode='matrix returner'))
             self.axesobj[axes].axis(False)
 
         '''TAB WİDGET İCİN TAB BARLAR OLUSTURMA'''
@@ -357,13 +359,13 @@ class MainGui(QMainWindow):
         curr_matrix = self.current_canvas_matrix
 
         if self.internal_selected_model is not None:
-            self.prediction_output = self.artificalIntelligenceModule.predictModel(model=self.internal_selected_model,
+            self.prediction_output = self.artificalIntelligenceModule.predictModel(model=self.internal_selected_model.split(':')[1],
                                                                                    matlike=curr_matrix,
                                                                                    batch_size=self.batchX,
                                                                                    mode=self.modeX)
 
         elif self.external_selected_model is not None:
-            self.prediction_output = self.artificalIntelligenceModule.predictModel(model=self.internal_selected_model,
+            self.prediction_output = self.artificalIntelligenceModule.predictModel(model=self.internal_selected_model.split(':')[1],
                                                                                    matlike=curr_matrix,
                                                                                    batch_size=batchX,
                                                                                    mode=modeX)
@@ -448,12 +450,14 @@ class MainGui(QMainWindow):
             print(f'path:{path}\nname:{name}')
 
             try:
-                self.matrix_format = self.image_processer.to_matrix(path)
+                self.matrix_format = self.image_processer.to_matrix(img=path,
+                                                                    mode='matrix returner')
 
             except Exception as e1:
                 try:
                     print(e1)
-                    self.matrix_format = self.image_processer.to_matrix(name)
+                    self.matrix_format = self.image_processer.to_matrix(img=name,
+                                                                        mode='matrix returner')
 
                 except Exception as e2:
                     print(e2)
