@@ -9,11 +9,13 @@ import matplotlib.pyplot as plt
 import winsound as ws
 import sys as _s
 import asyncio
+from random import randint
+import numpy as np
 
 import file_actions
 import image_processing as ip_side
 import file_actions as tdg
-
+import datetime as dt
 
 class ThreadSide(QObject):
     ifilesignal = pyqtSignal(str, int)
@@ -57,6 +59,10 @@ class MainGui(QMainWindow):
         '''ANA DEGİSKENLER'''
         self.curr_selected = []
         self.batch_arr = []
+
+        self.col = 0
+        self.pred = str
+
         batch = 4
         for xQ in range(6):
             self.batch_arr.append(batch)
@@ -91,13 +97,14 @@ class MainGui(QMainWindow):
         vertical_splt_sec_v4x1_1_vertical_splitter_1 = QSplitter(Qt.Vertical)
         vertical_splt_sec_v4x1_1_vertical_splitter_2 = QSplitter(Qt.Vertical)
 
+        self.table_widget_splitter = QSplitter(Qt.Vertical)
+
         vertical_splt_sec_v4x1_1_horizontal_splitter_1.addWidget(vertical_splt_sec_v4x1_1_vertical_splitter_1)
         vertical_splt_sec_v4x1_1_horizontal_splitter_1.addWidget(vertical_splt_sec_v4x1_1_vertical_splitter_2)
 
         horizontal_splitter_main.addWidget(vertical_splitter_main)
         horizontal_splitter_main.addWidget(vertical_splitter_second)
         horizontal_splitter_main.addWidget(vertical_splitter_last)
-        #horizontal_splitter_main.addWidget(self.modelPredictionTableWidget)
 
         '''ETİKETLER'''
         self.l1, self.l2, self.l3 = QLabel(text='Dahili Model Seçme Sistemi'), QLabel(
@@ -142,6 +149,12 @@ class MainGui(QMainWindow):
         '''EKSTRA WİDGETLAR'''
         self.internal_model_file_system_model = QListWidget()
         self.external_model_file_system_model = QListWidget()
+
+        self.modelPredictionTableWidget = QTableWidget()
+        self.modelPredictionTableWidget.setColumnCount(16)
+        self.modelPredictionTableWidget.setRowCount((5*2)*10)
+        self.modelPredictionTableWidget.setMaximumWidth((self.width() // 2))
+        self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini','Tahmin','Zaman Kodu'])
 
         self.enter_external_path = QLineEdit()
         self.enter_internal_path = QLineEdit()
@@ -299,8 +312,11 @@ class MainGui(QMainWindow):
         self.display_sys_splitter.addWidget(self.add_img_lst_btn)
         self.display_sys_splitter.addWidget(self.file_sys_tree_view)
 
+        self.table_widget_splitter.addWidget(self.modelPredictionTableWidget)
+
         layout_main.addWidget(self.lst_sys_splitter)
         layout_main.addWidget(self.display_sys_splitter)
+        layout_main.addWidget(self.table_widget_splitter)
 
         '''MODEL BİLGİLERİ(GRAFİKLERİ) WİDGETI İÇİN WİDGET TANIMLARI'''
         layout_second.addWidget(self.model_datas_window_label)
@@ -321,11 +337,19 @@ class MainGui(QMainWindow):
         self.reset_external_path.clicked.connect(self.resetEPath)
         self.start_analysis.clicked.connect(self.analysisIgniter)
 
+        '''TIMERS'''
+        self.sizeOptimerTimer = QTimer(self)
+        self.sizeOptimerTimer.timeout.connect(self.sizeOptimize)
+        self.sizeOptimerTimer.start(10)
+
         '''SIGNAL-SLOTS-PYQTSİGNALS'''
         self.ifilesignal.connect(self.addModelsWithList)
         self.efilesignal.connect(self.addModelsWithList)
 
         self.setCentralWidget(self.tabWidget)
+
+    def sizeOptimize(self):
+        self.modelPredictionTableWidget.setMaximumWidth(self.width() // 2)
 
     def analysisIgniter(self):
         mode = self.change_analysis_mode.currentText()
@@ -342,6 +366,7 @@ class MainGui(QMainWindow):
         self.batchX = int(batchX.split(':')[1])
 
         '''Logic variables'''
+        date,time = str(dt.datetime.now().date()),str(dt.datetime.now().strftime('%H:%M:%S'))
         self.prediction = None
         self.mtypeX = mtypeX
 
@@ -371,10 +396,43 @@ class MainGui(QMainWindow):
                                                                                    mode=modeX)
 
         if self.prediction_output is not None:
-            print(f'prediction output: {self.prediction_output}')
+            self.pred = None
+            if isinstance(self.prediction_output,np.ndarray):
+                item_raw_output = QTableWidgetItem(str(self.prediction_output[0][0]))
+                item_output = None
+                item_timecode = QTableWidgetItem(f'{date}--{time}')
+
+
+                if isinstance(self.prediction_output[0][0],np.float32):
+                    if self.prediction_output[0][0] > (0.5) + randint(0,5) / 100:       #0-5 / 100 random seed
+                        self.pred = 'Saglikli'
+                    
+                    elif self.prediction_output[0][0] >= (0.4) + randint(0,5) / 100:    #0-5 / 100 random seed
+                        self.pred = 'Kısmen Saglikli'
+                    
+                    else:
+                        self.pred = 'Bitki hasta'
+                
+                item_output = QTableWidgetItem(self.pred)
+                
+                self.modelPredictionTableWidget.setItem(self.col,0,item_raw_output)
+                self.modelPredictionTableWidget.setItem(self.col,1,item_output)
+                self.modelPredictionTableWidget.setItem(self.col,2,item_timecode)
+                print(f'prediction output: {self.prediction_output}')
+                
+                self.col += 1
+            else:
+                print(type(self.prediction_output),type(self.prediction_output[0][0]))
 
         else:
             print(f'prediction failed, prediction output: {self.prediction_output}')
+
+    def clear_table_widget(self):
+        self.col = 0
+        self.modelPredictionTableWidget.clear()
+        self.modelPredictionTableWidget.setColumnCount(16)
+        self.modelPredictionTableWidget.setRowCount((3*2)*2)
+        self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini','Tahmin','Zaman kodu'])
 
     def inspectModel(self, mpath, mname, mtype):
         output, code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(':')[1])
