@@ -16,8 +16,8 @@ import file_actions as tdg
 
 
 class ThreadSide(QObject):
-    ifilesignal = pyqtSignal(str,int)
-    efilesignal = pyqtSignal(str,int)
+    ifilesignal = pyqtSignal(str, int)
+    efilesignal = pyqtSignal(str, int)
 
     def __init__(self, internals, externals):
         super().__init__()
@@ -25,16 +25,16 @@ class ThreadSide(QObject):
 
     async def emitInternals(self):
         for internal_file in self.internal_fs:
-            #if isinstance(internal_file,str) and internal_file.endswith('.h5'):
-            self.ifilesignal.emit(internal_file,0)
+            # if isinstance(internal_file,str) and internal_file.endswith('.h5'):
+            self.ifilesignal.emit(internal_file, 0)
 
     async def emitExternals(self):
         for external_file in self.external_fs:
-            #if isinstance(external_file,str) and external_file.endswith('.h5'):
-            self.efilesignal.emit(external_file,1)
+            # if isinstance(external_file,str) and external_file.endswith('.h5'):
+            self.efilesignal.emit(external_file, 1)
 
     async def igniter(self):
-        await asyncio.gather(self.emitInternals(),self.emitExternals())
+        await asyncio.gather(self.emitInternals(), self.emitExternals())
 
     def mainIgniter(self):
         if self.internal_fs and self.internal_fs:
@@ -55,11 +55,18 @@ class MainGui(QMainWindow):
         self.efilesignal = self.threadPool.efilesignal
 
         '''ANA DEGİSKENLER'''
+        self.curr_selected = []
+        self.batch_arr = []
+        batch = 4
+        for xQ in range(6):
+            self.batch_arr.append(batch)
+            batch *= 2
+
         self.current_canvas_matrix = None
         self.current_selected_canvas = None
 
-        self.IPath,self.IName,self.IType = None,None,None
-        self.EPath,self.EName,self.EType = None,None,None
+        self.IPath, self.IName, self.IType = None, None, None
+        self.EPath, self.EName, self.EType = None, None, None
 
         '''GÖRSEL İSLEYİCİ'''
         self.image_processer = ip_side.İmageProcesser()
@@ -129,17 +136,31 @@ class MainGui(QMainWindow):
         self.reset_internal_path = QPushButton('Dahili Yolu Sıfırla')
         self.reset_external_path = QPushButton('Harici Yolu Sıfırla')
 
+        self.start_analysis = QPushButton('Analizi Başlat')
+
         '''EKSTRA WİDGETLAR'''
         self.internal_model_file_system_model = QListWidget()
         self.external_model_file_system_model = QListWidget()
 
         self.enter_external_path = QLineEdit()
         self.enter_internal_path = QLineEdit()
+
         self.enter_external_path.setPlaceholderText('Harici Modelin Yolunu Girin...')
         self.enter_internal_path.setPlaceholderText('Dahili Modelin Yolunu girin....')
         self.enter_external_path.setText('models/ProgramInterfaceModelsExternal')
         self.enter_internal_path.setText('models/ProgramInterfaceModelsInternal')
 
+        self.change_analysis_mode = QComboBox()
+        self.change_model_type = QComboBox()
+        self.change_batch_size = QComboBox()
+
+        itemsX, itemsY = ['Hasta-Sağlıklı Tespiti', 'Hastalık Tespiti'], ['Harici', 'Dahili']
+        for itemX, itemY in zip(itemsX, itemsY):
+            self.change_analysis_mode.addItem(itemX)
+            self.change_model_type.addItem(itemY)
+
+        for batch in self.batch_arr:
+            self.change_batch_size.addItem(str(f'Batch büyüklüğü: {batch}'))
 
         self.model_techinc_informations = QTextEdit()
         self.model_techinc_informations.setReadOnly(True)
@@ -262,6 +283,10 @@ class MainGui(QMainWindow):
         self.clear_current_model_data_graphs = QPushButton('Monitörleri temizle')
 
         self.lst_sys_splitter.addWidget(self.flowers_lst)
+        self.lst_sys_splitter.addWidget(self.change_analysis_mode)
+        self.lst_sys_splitter.addWidget(self.change_model_type)
+        self.lst_sys_splitter.addWidget(self.change_batch_size)
+        self.lst_sys_splitter.addWidget(self.start_analysis)
 
         self.display_sys_splitter.addWidget(self.navbar)
         self.display_sys_splitter.addWidget(self.dialLabel)
@@ -286,12 +311,13 @@ class MainGui(QMainWindow):
         self.add_img_btn.clicked.connect(self.add_img_canvas)
         self.add_img_lst_btn.clicked.connect(self.add_lst_img)
         self.define_internal_model_btn.clicked.connect(self.define_internal_model)
-        self.inspect_internal_model_btn.clicked.connect(lambda : self.inspectModel(self.IPath,self.IName,self.IType))
-        self.inspect_external_model_btn.clicked.connect(lambda : self.inspectModel(self.EPath,self.EName,self.EType))
+        self.inspect_internal_model_btn.clicked.connect(lambda: self.inspectModel(self.IPath, self.IName, self.IType))
+        self.inspect_external_model_btn.clicked.connect(lambda: self.inspectModel(self.EPath, self.EName, self.EType))
         self.define_all_models_btn.clicked.connect(self.addModels)
         self.clear_all_models_btn.clicked.connect(self.clearModels)
         self.reset_internal_path.clicked.connect(self.resetIPath)
         self.reset_external_path.clicked.connect(self.resetEPath)
+        self.start_analysis.clicked.connect(self.analysisIgniter)
 
         '''SIGNAL-SLOTS-PYQTSİGNALS'''
         self.ifilesignal.connect(self.addModelsWithList)
@@ -299,11 +325,60 @@ class MainGui(QMainWindow):
 
         self.setCentralWidget(self.tabWidget)
 
-    def inspectModel(self,mpath,mname,mtype):
-        output,code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(':')[1])
+    def analysisIgniter(self):
+        mode = self.change_analysis_mode.currentText()
+        mtype = self.change_model_type.currentText()
+        batch = self.change_batch_size.currentText()
+
+        self.startAnalysis(modeX=mode,
+                           batchX=batch,
+                           mtypeX=mtype)
+
+    def startAnalysis(self, modeX, batchX, mtypeX):
+        '''Model variables'''
+        self.modeX = modeX
+        self.batchX = int(batchX.split(':')[1])
+
+        '''Logic variables'''
+        self.prediction = None
+        self.mtypeX = mtypeX
+
+        self.artificalIntelligenceModule = artifical_intelligence.ArtificalIntelligence()
+        self.internal_selected_model, self.external_selected_model = self.IPath, self.EPath
+
+        if mtypeX == 'internal':
+            self.internal_selected_model, self.external_selected_model = self.internal_selected_model.split(':')[
+                1], None
+
+        elif mtypeX == 'external':
+            self.internal_selected_model, self.external_selected_model = None, self.external_selected_model.split(':')[
+                1]
+
+        curr_matrix = self.current_canvas_matrix
+
+        if self.internal_selected_model is not None:
+            self.prediction_output = self.artificalIntelligenceModule.predictModel(model=self.internal_selected_model,
+                                                                                   matlike=curr_matrix,
+                                                                                   batch_size=self.batchX,
+                                                                                   mode=self.modeX)
+
+        elif self.external_selected_model is not None:
+            self.prediction_output = self.artificalIntelligenceModule.predictModel(model=self.internal_selected_model,
+                                                                                   matlike=curr_matrix,
+                                                                                   batch_size=batchX,
+                                                                                   mode=modeX)
+
+        if self.prediction_output is not None:
+            print(f'prediction output: {self.prediction_output}')
+
+        else:
+            print(f'prediction failed, prediction output: {self.prediction_output}')
+
+    def inspectModel(self, mpath, mname, mtype):
+        output, code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(':')[1])
 
         if code == 0:
-            if isinstance(output,str):
+            if isinstance(output, str):
                 self.model_techinc_informations.setText(output)
 
             else:
@@ -319,11 +394,18 @@ class MainGui(QMainWindow):
             pass
 
     def define_internal_model(self):
-        curr_selected = self.internal_model_file_system_model.selectedItems()
+        self.curr_selected = self.internal_model_file_system_model.selectedItems()
 
-        if len(curr_selected) >= 1:
-            mtype,mname,mpath = curr_selected[len(curr_selected) - 1].text().split('\n')
-            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')  
+        if len(self.curr_selected) >= 1:
+            mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
+            if mtype.split(':')[1] == ' Dahili':
+                self.IType, self.IName, self.IPath = mtype, mname, mpath
+            elif mtype.split(':')[1] == ' Harici':
+                self.EType, self.EName, self.EPath = mtype, mname, mpath
+            else:
+                print(mtype.split(':')[1])
+
+            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')
             self.file_sys_internal_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
 
         else:
@@ -440,9 +522,9 @@ class MainGui(QMainWindow):
 
             if isinstance(internal_models, list) and isinstance(external_models, list):
                 if len(internal_models) >= 1 and len(external_models) >= 1:
-                    internal_models = [f'Model türü: Dahili\nModel ismi: {x}\nModel yolu:{self.ipath}\\{x}' for x in
+                    internal_models = [f'Model türü: Dahili\nModel ismi: {x}\nModel yolu:{self.ipath}/{x}' for x in
                                        internal_models]
-                    external_models = [f'Model türü: Harici\nModel ismi: {x}\nModel yolu:{self.epath}\\{x}' for x in
+                    external_models = [f'Model türü: Harici\nModel ismi: {x}\nModel yolu:{self.epath}/{x}' for x in
                                        external_models]
 
             self.threadIgniter(internal_models, external_models)
@@ -452,24 +534,25 @@ class MainGui(QMainWindow):
     def clearModels(self):
         self.internal_model_file_system_model.clear()
         self.external_model_file_system_model.clear()
-        self.model_inspect_preview_label.setText('Model adı: Bilinmiyor\nModel yolu: Bilinmiyor\nModel türü: Bilinmiyor')
+        self.model_inspect_preview_label.setText(
+            'Model adı: Bilinmiyor\nModel yolu: Bilinmiyor\nModel türü: Bilinmiyor')
 
-    def addModelsWithList(self,file,flag):
+    def addModelsWithList(self, file, flag):
         '''listeye ekleme şeylerini kodla adamı hasta etme'''
         print('Xxx')
         self.file = file
         self.flag = flag
 
         if self.flag == 0:
-            if isinstance(self.file,str):
-                self.IType,self.IName,self.IPath = self.file.split('\n')
+            if isinstance(self.file, str):
+                self.IType, self.IName, self.IPath = self.file.split('\n')
                 self.listWidgetItemInternal = QListWidgetItem(f'{self.IType}\n{self.IName}\n{self.IPath}')
                 self.listWidgetItemInternal.setTextAlignment(Qt.AlignCenter)
                 self.internal_model_file_system_model.addItem(self.listWidgetItemInternal)
 
         if self.flag == 1:
-            if isinstance(self.file,str):
-                self.EType,self.EName,self.EPath = self.file.split('\n')
+            if isinstance(self.file, str):
+                self.EType, self.EName, self.EPath = self.file.split('\n')
                 self.listWidgetExternal = QListWidgetItem(f'{self.EType}\n{self.EName}\n{self.EPath}')
                 self.listWidgetExternal.setTextAlignment(Qt.AlignCenter)
                 self.external_model_file_system_model.addItem(self.listWidgetExternal)
