@@ -25,9 +25,9 @@ class İmageProcesser:
             try:
                 print(img)
                 if isinstance(img, str):
-                    return cv.resize(cv.cvtColor(cv.imread(img), cv.COLOR_BGR2RGB), dsize=(224, 224)) / 255
+                    return cv.resize(cv.cvtColor(cv.imread(img), cv.COLOR_BGR2RGB), dsize=(224, 224))
                 else:
-                    return cv.resize(cv.cvtColor(img, cv.COLOR_BGR2RGB), dsize=(224, 224)) / 255
+                    return cv.resize(cv.cvtColor(img, cv.COLOR_BGR2RGB), dsize=(224, 224))
 
             except Exception as e0:
                 print(e0)
