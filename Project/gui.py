@@ -62,6 +62,7 @@ class MainGui(QMainWindow):
         '''ANA DEGİSKENLER'''
         self.curr_selected = []
         self.batch_arr = []
+        self.curr_img_name = []
 
         self.col = 0
         self.pred = str
@@ -86,7 +87,7 @@ class MainGui(QMainWindow):
         widget_finally = QWidget()  # model eğitimi
 
         layout_main = QHBoxLayout()
-        layout_second = QVBoxLayout()
+        layout_second = QHBoxLayout()
         layout_finally = QVBoxLayout()
         tab_layout = QVBoxLayout()
 
@@ -108,6 +109,8 @@ class MainGui(QMainWindow):
         horizontal_splitter_main.addWidget(vertical_splitter_main)
         horizontal_splitter_main.addWidget(vertical_splitter_second)
         horizontal_splitter_main.addWidget(vertical_splitter_last)
+
+        canvases_splitter = QSplitter(Qt.Vertical)
 
         '''ETİKETLER'''
         self.l1, self.l2, self.l3 = QLabel(text='Dahili Model Seçme Sistemi'), QLabel(
@@ -147,6 +150,8 @@ class MainGui(QMainWindow):
         self.reset_internal_path = QPushButton('Dahili Yolu Sıfırla')
         self.reset_external_path = QPushButton('Harici Yolu Sıfırla')
 
+        self.clear_flowers_list = QPushButton('Cicek listesini temizle')
+
         self.start_analysis = QPushButton('Analizi Başlat')
 
         '''EKSTRA WİDGETLAR'''
@@ -157,7 +162,7 @@ class MainGui(QMainWindow):
         self.modelPredictionTableWidget.setColumnCount(16)
         self.modelPredictionTableWidget.setRowCount((5 * 2) * 10)
         self.modelPredictionTableWidget.setMaximumWidth((self.width() // 2))
-        self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini', 'Tahmin', 'Zaman Kodu'])
+        self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini', 'Tahmin', 'Zaman kodu','Mevcut kanvas','Görsel ismi'])
 
         self.enter_external_path = QLineEdit()
         self.enter_internal_path = QLineEdit()
@@ -239,12 +244,17 @@ class MainGui(QMainWindow):
         '''GÖRSEL GÖSTERİCİ MONİTÖRLER 1X2'''
         self.figureobj, self.axesobj = plt.subplots(1, 2, figsize=(8, 8))
         self.canvas_main = FigureCanvasQT(self.figureobj)
-        self.navbar = NavigationToolbarQT(canvas=self.canvas_main)
+        self.navbarX = NavigationToolbarQT(canvas=self.canvas_main)
 
-        '''GRAFİK GÖSTERİCİ MONİTÖRLER 2X2'''
-        self.secondfigureobj, self.secondaxesobj = plt.subplots(2, 2, figsize=(8, 8))
+        '''GRAFİK GÖSTERİCİ MONİTÖRLER 3X2'''
+        self.secondfigureobj, self.secondaxesobj = plt.subplots(3, 2, figsize=(8, 8))
         self.canvas_second = FigureCanvasQT(self.secondfigureobj)
-        self.navbar = NavigationToolbarQT(canvas=self.canvas_main)
+        self.navbarY = NavigationToolbarQT(canvas=self.canvas_second)
+
+        '''GRAFİK GÖSTERİCİ MONİTÖRLER 1X2'''
+        self.lastfigureobj, self.secondaxesobj = plt.subplots(1,2, figsize=(8, 8))
+        self.canvas_last = FigureCanvasQT(self.lastfigureobj)
+        self.navbarZ = NavigationToolbarQT(canvas=self.canvas_last)
 
         '''AXES OBJESİNİ ÖZELLESTİRMEK(GÖRSEL GÖSTERİCİ AXESLER)'''
         for axes in range(len(self.axesobj)):
@@ -305,13 +315,14 @@ class MainGui(QMainWindow):
         self.show_current_model_datas_btn = QPushButton('Mevcut değerleri göster')
         self.clear_current_model_data_graphs = QPushButton('Monitörleri temizle')
 
+        self.lst_sys_splitter.addWidget(self.clear_flowers_list)            
         self.lst_sys_splitter.addWidget(self.flowers_lst)
         self.lst_sys_splitter.addWidget(self.change_analysis_mode)
         self.lst_sys_splitter.addWidget(self.change_model_type)
         self.lst_sys_splitter.addWidget(self.change_batch_size)
         self.lst_sys_splitter.addWidget(self.start_analysis)
 
-        self.display_sys_splitter.addWidget(self.navbar)
+        self.display_sys_splitter.addWidget(self.navbarX)
         self.display_sys_splitter.addWidget(self.dialLabel)
         self.display_sys_splitter.addWidget(self.canvas_main)
         self.display_sys_splitter.addWidget(self.dial)
@@ -329,16 +340,25 @@ class MainGui(QMainWindow):
         layout_main.addWidget(self.table_widget_splitter)
 
         '''MODEL BİLGİLERİ(GRAFİKLERİ) WİDGETI İÇİN WİDGET TANIMLARI'''
-        layout_second.addWidget(self.model_datas_window_label)
-        layout_second.addWidget(self.canvas_second)
-        layout_second.addWidget(self.show_current_model_datas_btn)
-        layout_second.addWidget(self.clear_current_model_data_graphs)
+        ce1,ce2 = QSplitter(Qt.Vertical),QSplitter(Qt.Vertical)
+        
+        ce1.addWidget(self.navbarY)
+        ce1.addWidget(self.canvas_second)
+        ce1.addWidget(self.show_current_model_datas_btn)
+        ce1.addWidget(self.clear_current_model_data_graphs)
+
+        ce2.addWidget(self.navbarZ)
+        ce2.addWidget(self.canvas_last)
+
+        layout_second.addWidget(ce1)
+        layout_second.addWidget(ce2)
 
         '''SİGNAL-SLOT'''
         self.clear_canvas_btn.clicked.connect(self.clear_canvas)
         self.add_img_btn.clicked.connect(self.add_img_canvas)
         self.add_img_lst_btn.clicked.connect(self.add_lst_img)
         self.define_internal_model_btn.clicked.connect(self.define_internal_model)
+        self.define_external_model_btn.clicked.connect(self.define_external_model)
         self.inspect_internal_model_btn.clicked.connect(lambda: self.inspectModel(self.IPath, self.IName, self.IType))
         self.inspect_external_model_btn.clicked.connect(lambda: self.inspectModel(self.EPath, self.EName, self.EType))
         self.define_all_models_btn.clicked.connect(self.addModels)
@@ -346,6 +366,7 @@ class MainGui(QMainWindow):
         self.reset_internal_path.clicked.connect(self.resetIPath)
         self.reset_external_path.clicked.connect(self.resetEPath)
         self.start_analysis.clicked.connect(self.analysisIgniter)
+        self.clear_flowers_list.clicked.connect(self.reset_flowers_list)
         self.apply_target_path.clicked.connect(self.define_target_folder_path)
 
         '''TIMERS'''
@@ -358,6 +379,11 @@ class MainGui(QMainWindow):
         self.efilesignal.connect(self.addModelsWithList)
 
         self.setCentralWidget(self.tabWidget)
+
+        '''QSS SIDE'''
+        qss_file = open('program_css.qss',mode='r')
+        self.setStyleSheet(qss_file.read())
+        qss_file.close()
 
     def sizeOptimize(self):
         self.modelPredictionTableWidget.setMaximumWidth(self.width() // 2)
@@ -377,9 +403,18 @@ class MainGui(QMainWindow):
         mtype = self.change_model_type.currentText()
         batch = self.change_batch_size.currentText()
 
-        self.startAnalysis(modeX=mode,
-                           batchX=batch,
-                           mtypeX=mtype)
+        try:
+            self.startAnalysis(modeX=mode,
+                            batchX=batch,
+                            mtypeX=mtype)
+        except Exception as e0fx:
+            if mtype == 'internal':
+                QMessageBox.critical(self,'UYARİ',f'Lutfen seçtiğiniz modelin çalışır durumda olup kontrol ediniz. Model şu an için kullanılamıyor\nHATA:{e0fx}\nMODEL:{self.IName}\nMODEL TÜRÜ: {mtype}')
+            elif mtype == 'external':
+                QMessageBox.critical(self,'UYARİ',f'Lutfen seçtiğiniz modelin çalışır durumda olup kontrol ediniz. Model şu an için kullanılamıyor\nHATA:{e0fx}\nMODEL:{self.EName}\nMODEL TÜRÜ: {mtype}')
+            
+            else:
+                QMessageBox.critical(self,'UYARİ',f'Lutfen seçtiğiniz modelin çalışır durumda olup kontrol ediniz. Model şu an için kullanılamıyor\nHATA:{e0fx}\MODEL TÜRÜ VE MODELİN KENDİSİ PROGRAM TARAFİNDAN BULUNAMADİ')
 
     def startAnalysis(self, modeX, batchX, mtypeX):
         '''Model variables'''
@@ -404,65 +439,73 @@ class MainGui(QMainWindow):
 
         curr_matrix = self.current_canvas_matrix
 
-        if self.internal_selected_model is not None:
-            self.prediction_output = self.artificalIntelligenceModule.predictModel(
-                model=self.internal_selected_model.split(':')[1],
-                matlike=curr_matrix,
-                batch_size=self.batchX,
-                mode=self.modeX)
+        if curr_matrix is not None:
+            if self.internal_selected_model is not None:
+                self.prediction_output = self.artificalIntelligenceModule.predictModel(
+                    model=self.internal_selected_model.split(':')[1],
+                    matlike=curr_matrix,
+                    batch_size=self.batchX,
+                    mode=self.modeX)
 
-        elif self.external_selected_model is not None:
-            self.prediction_output = self.artificalIntelligenceModule.predictModel(
-                model=self.internal_selected_model.split(':')[1],
-                matlike=curr_matrix,
-                batch_size=batchX,
-                mode=modeX)
+            elif self.external_selected_model is not None:
+                self.prediction_output = self.artificalIntelligenceModule.predictModel(
+                    model=self.internal_selected_model.split(':')[1],
+                    matlike=curr_matrix,
+                    batch_size=batchX,
+                    mode=modeX)
 
-        
-        if self.prediction_output is not None:
-            self.pred = None
-            if isinstance(self.prediction_output, np.ndarray):
-                item_raw_output = QTableWidgetItem(str(self.prediction_output[0][0]))
-                item_output = None
-                item_timecode = QTableWidgetItem(f'{date}--{time}')
 
-                if isinstance(self.prediction_output[0][0], np.float32):
-                    if self.prediction_output[0][0] > (0.5) + randint(0, 5) / 100:  # 0-5 / 100 random seed
-                        self.pred = 'Saglikli'
+            if self.prediction_output is not None:
+                self.pred = None
+                if self.col >= 100:
+                    self.modelPredictionTableWidget.setRowCount(self.col + 1)
 
-                    elif self.prediction_output[0][0] >= (0.4) + randint(0, 5) / 100:  # 0-5 / 100 random seed
-                        self.pred = 'Kısmen Saglikli'
+                if isinstance(self.prediction_output, np.ndarray):
+                    item_raw_output = QTableWidgetItem(str(self.prediction_output[0][0]))
+                    item_output = None
+                    item_timecode = QTableWidgetItem(f'{date}--{time}')
 
-                    else:
-                        self.pred = 'Bitki hasta'
+                    if isinstance(self.prediction_output[0][0], np.float32):
+                        if self.prediction_output[0][0] > (0.5) + randint(0, 5) / 100:  # 0-5 / 100 random seed
+                            self.pred = 'Saglikli'
 
-                item_output = QTableWidgetItem(self.pred)
+                        elif self.prediction_output[0][0] >= (0.4) + randint(0, 5) / 100:  # 0-5 / 100 random seed
+                            self.pred = 'Kısmen Saglikli'
 
-                self.modelPredictionTableWidget.setItem(self.col, 0, item_raw_output)
-                self.modelPredictionTableWidget.setItem(self.col, 1, item_output)
-                self.modelPredictionTableWidget.setItem(self.col, 2, item_timecode)
-                print(f'prediction output: {self.prediction_output}')
+                        else:
+                            self.pred = 'Bitki hasta'
 
-                self.col += 1
+                    item_output = QTableWidgetItem(self.pred)
+                    item_curr_canvas = QTableWidgetItem(str(str(self.curr_img_name).split('\n')[1].split(':')[1]))
+                    item_curr_img_name = QTableWidgetItem(f'{str(self.current_selected_canvas)}. Kanvas')
+
+                    self.modelPredictionTableWidget.setItem(self.col, 0, item_raw_output)
+                    self.modelPredictionTableWidget.setItem(self.col, 1, item_output)
+                    self.modelPredictionTableWidget.setItem(self.col, 2, item_timecode)
+                    self.modelPredictionTableWidget.setItem(self.col, 3, item_curr_canvas)
+                    self.modelPredictionTableWidget.setItem(self.col, 4, item_curr_img_name)
+                    print(f'prediction output: {self.prediction_output}')
+
+                    self.col += 1
+                else:
+                    print(type(self.prediction_output), type(self.prediction_output[0][0]))
+
             else:
-                print(type(self.prediction_output), type(self.prediction_output[0][0]))
-
-        else:
-            print(f'prediction failed, prediction output: {self.prediction_output}')
+                print(f'prediction failed, prediction output: {self.prediction_output}')
 
     def clear_table_widget(self):
         self.col = 0
         self.modelPredictionTableWidget.clear()
         self.modelPredictionTableWidget.setColumnCount(16)
         self.modelPredictionTableWidget.setRowCount((3 * 2) * 2)
-        self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini', 'Tahmin', 'Zaman kodu'])
+        self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini', 'Tahmin', 'Zaman kodu','Mevcut kanvas','Görsel ismi'])
 
     def inspectModel(self, mpath, mname, mtype):
         output, code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(':')[1])
 
         if code == 0:
             if isinstance(output, str):
-                self.model_techinc_informations.setText(output)
+                self.model_techinc_informations.setText(f'{self.EPath}\n{self.EName}\n{self.EType}\n{output}')
 
             else:
                 print(type(output))
@@ -483,8 +526,8 @@ class MainGui(QMainWindow):
             mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
             if mtype.split(':')[1] == ' Dahili':
                 self.IType, self.IName, self.IPath = mtype, mname, mpath
-            elif mtype.split(':')[1] == ' Harici':
-                self.EType, self.EName, self.EPath = mtype, mname, mpath
+
+
             else:
                 print(mtype.split(':')[1])
 
@@ -494,6 +537,31 @@ class MainGui(QMainWindow):
         else:
             pass
 
+    def define_external_model(self):
+        self.curr_selected = self.external_model_file_system_model.selectedItems()
+
+        if len(self.curr_selected) >= 1:
+            mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
+            if mtype.split(':')[1] == ' Dahili':
+                self.IType, self.IName, self.IPath = mtype, mname, mpath
+            elif mtype.split(':')[1] == ' Harici':
+                self.EType, self.EName, self.EPath = mtype, mname, mpath
+            else:
+                print(mtype.split(':')[1])
+
+            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')
+            self.file_sys_external_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
+
+        else:
+            pass
+
+    def reset_flowers_list(self):
+        item = QListWidgetItem(str('**----LISTEYE EKLENEN GORSELLER BURADA GOZUKUR----**'))
+        item.setTextAlignment(Qt.AlignCenter)
+        
+        self.flowers_lst.clear()
+        self.flowers_lst.addItem(item)
+
     def resetIPath(self):
         self.enter_internal_path.setText('models\ProgramInterfaceModelsInternal')
 
@@ -501,6 +569,9 @@ class MainGui(QMainWindow):
         self.enter_internal_path.setText('models\ProgramInterfaceModelsExternal')
 
     def clear_canvas(self):
+        self.current_canvas_matrix = None
+        self.curr_selected = None
+
         if self.dial.value() == 1:
             self.axesobj[0].set_title(f'{self.dial.value()}. Kanvas')
             self.axesobj[0].clear()
@@ -519,7 +590,12 @@ class MainGui(QMainWindow):
             self.canvas_main.draw()
 
     def add_img_canvas(self):
-        self.selected_items = self.flowers_lst.selectedItems()
+        try:
+            self.selected_items = self.flowers_lst.selectedItems()
+            self.curr_img_name = self.selected_items.copy().pop().text()
+        except:
+            QMessageBox.critical(self,'UYARİ','Lutfen listeden bir görsel seçiniz ve tekrar deneyiniz!')
+        
         if len(self.selected_items) > 0:
             last_selected = self.selected_items[len(self.selected_items) - 1]
             last_selected_text = last_selected.text()
