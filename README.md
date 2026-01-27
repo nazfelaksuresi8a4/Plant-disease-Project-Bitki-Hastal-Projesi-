@@ -24,5 +24,6 @@
 <img width="1226" height="627" alt="image" src="https://github.com/user-attachments/assets/df9bdf23-f517-4590-a964-4e226e15524d" />
 
 
-                          MODEL ÖZELLİKLERİ
+                          DETAYLI BILGILENDIRME BELGESI
 
+[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/24870976/plant_disease_projesi_durum_raporu.pdf)
