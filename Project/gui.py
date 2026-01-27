@@ -242,19 +242,23 @@ class MainGui(QMainWindow):
         ]
 
         '''GÖRSEL GÖSTERİCİ MONİTÖRLER 1X2'''
-        self.figureobj, self.axesobj = plt.subplots(1, 2, figsize=(8, 8))
+        self.figureobj, self.axesobj = plt.subplots(1, 2, figsize=(4, 4),facecolor='#52575c')
         self.canvas_main = FigureCanvasQT(self.figureobj)
         self.navbarX = NavigationToolbarQT(canvas=self.canvas_main)
 
         '''GRAFİK GÖSTERİCİ MONİTÖRLER 3X2'''
-        self.secondfigureobj, self.secondaxesobj = plt.subplots(3, 2, figsize=(8, 8))
+        self.secondfigureobj, self.secondaxesobj = plt.subplots(3, 2, figsize=(4, 4),facecolor='#52575c')
         self.canvas_second = FigureCanvasQT(self.secondfigureobj)
         self.navbarY = NavigationToolbarQT(canvas=self.canvas_second)
 
         '''GRAFİK GÖSTERİCİ MONİTÖRLER 1X2'''
-        self.lastfigureobj, self.secondaxesobj = plt.subplots(1,2, figsize=(8, 8))
+        self.lastfigureobj, self.lastaxesobj = plt.subplots(3,1, figsize=(4, 4),facecolor='#52575c')
         self.canvas_last = FigureCanvasQT(self.lastfigureobj)
         self.navbarZ = NavigationToolbarQT(canvas=self.canvas_last)
+
+        self.figureobj.set_facecolor('#52575c')
+        self.secondfigureobj.set_facecolor('#52575c')
+        self.lastfigureobj.set_facecolor('#52575c')
 
         '''AXES OBJESİNİ ÖZELLESTİRMEK(GÖRSEL GÖSTERİCİ AXESLER)'''
         for axes in range(len(self.axesobj)):
@@ -312,8 +316,12 @@ class MainGui(QMainWindow):
         self.add_img_lst_btn = QPushButton('Listeye görsel ekle')
 
         self.model_datas_window_label = QLabel('Modelin Mevcut Ögrenme Grafikleri')
-        self.show_current_model_datas_btn = QPushButton('Mevcut değerleri göster')
-        self.clear_current_model_data_graphs = QPushButton('Monitörleri temizle')
+
+        self.show_current_model_datas_btn_X = QPushButton('Mevcut değerleri göster')
+        self.clear_current_model_data_graphs_X = QPushButton('Monitörleri temizle')
+
+        self.show_current_model_datas_btn_Y = QPushButton('Mevcut değerleri göster')
+        self.clear_current_model_data_graphs_Y = QPushButton('Monitörleri temizle')
 
         self.lst_sys_splitter.addWidget(self.clear_flowers_list)            
         self.lst_sys_splitter.addWidget(self.flowers_lst)
@@ -344,11 +352,13 @@ class MainGui(QMainWindow):
         
         ce1.addWidget(self.navbarY)
         ce1.addWidget(self.canvas_second)
-        ce1.addWidget(self.show_current_model_datas_btn)
-        ce1.addWidget(self.clear_current_model_data_graphs)
+        ce1.addWidget(self.show_current_model_datas_btn_X)
+        ce1.addWidget(self.clear_current_model_data_graphs_X)
 
         ce2.addWidget(self.navbarZ)
         ce2.addWidget(self.canvas_last)
+        ce2.addWidget(self.show_current_model_datas_btn_Y)
+        ce2.addWidget(self.clear_current_model_data_graphs_Y)
 
         layout_second.addWidget(ce1)
         layout_second.addWidget(ce2)
@@ -369,6 +379,9 @@ class MainGui(QMainWindow):
         self.clear_flowers_list.clicked.connect(self.reset_flowers_list)
         self.apply_target_path.clicked.connect(self.define_target_folder_path)
 
+        '''FUNCTION CALLS'''
+        self.plotGraphs(mode='test')
+
         '''TIMERS'''
         self.sizeOptimerTimer = QTimer(self)
         self.sizeOptimerTimer.timeout.connect(self.sizeOptimize)
@@ -384,6 +397,55 @@ class MainGui(QMainWindow):
         qss_file = open('program_css.qss',mode='r')
         self.setStyleSheet(qss_file.read())
         qss_file.close()
+
+    def plotGraphs(self,array=None,label=None,mode=None):
+        function_status = 1
+        nrow,ncol,index = 0,0,0
+
+        main_labels = ['Accuracy','Loss','Validation Accuracy','Validation Loss','Learning Rate','F1 Score']
+        second_labels = ['Test loss','Test Accuracy','Ratio of validation accuracy to validation loss']
+
+        if mode is not None:
+            function_status = 1
+
+        else:
+            function_status = 0
+
+        if array is not None or label is not None or mode == 'test':
+            function_status = 1
+        
+        else:
+            function_status = 0
+
+        if function_status == 1:
+            if mode == 'test':
+                for axes_vector in self.secondaxesobj:
+                    for axes in axes_vector:
+                        axes.plot(np.random.normal(0,10,24),label=main_labels[index])
+                        print(index)
+                        axes.legend()
+                        self.canvas_second.draw()
+                        
+                        if index < len(main_labels) - 1:
+                            index += 1
+                
+                index = 0
+
+                for axesY in self.lastaxesobj:
+                    axesY.plot(np.random.normal(0,10,24),label=second_labels[index])
+                    axesY.legend()
+                    self.canvas_last.draw()
+
+                    if index < len(second_labels):
+                        index += 1
+                    else:
+                        pass
+                index = 0
+
+        else:
+            pass
+
+
 
     def sizeOptimize(self):
         self.modelPredictionTableWidget.setMaximumWidth(self.width() // 2)
