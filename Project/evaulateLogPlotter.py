@@ -33,11 +33,7 @@ class LoggPlotterEvaulate:
             self.loss_arr = [float(x) for x in self.loss_arr]
             self.acc_arr = [float(x) for x in self.acc_arr]
 
-            print(self.loss_arr)
-            print(self.acc_arr)
-
-            self.loss_arr.insert(0,0)
-            self.acc_arr.insert(0, 0)
+            return (self.loss_arr,self.acc_arr,['Loss','Accuracy'])
 
 
 LoggPlotterEvaulate(r"C:\Users\alper\Desktop\Plant Disease Project\logs\SigmoidModelLogs\evaulates.txt").plotLog()
