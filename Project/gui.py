@@ -18,6 +18,53 @@ import file_actions
 import image_processing as ip_side
 import file_actions as tdg
 import datetime as dt
+import threading 
+import logPlotter
+import evaulateLogPlotter
+
+class PlotterThreadSide(QObject):
+    returner_signal = pyqtSignal(int, int, dict, str, int)
+    returner_signal_e = pyqtSignal(list,list)
+    renderer_signal = pyqtBoundSignal(str,int)
+
+    def __init__(self,path,mode):
+        super().__init__()
+
+        self.mode = mode
+        self.path = path
+        self.main_gen = None
+        self.nrow_gen = None
+        self.ncol_gen = None
+        self.dict_gen = None
+        self.str_gen = None
+
+        self.nrow_e = None
+        self.ncol_e = None
+        self.accs_e = None
+        self.losses_e = None
+        self.keys_e = None
+        
+
+    def referanceFlow(self):
+        if self.mode == 0:
+            self.main_gen = logPlotter.Plotter().plotter(self.path)
+
+        elif self.mode == 1:
+            self.main_gen = evaulateLogPlotter.LoggPlotterEvaulate(self.path).plotLog()
+
+        if self.main_gen is not None:
+            if self.mode == 0:
+                for gen in self.main_gen:
+                    self.nrow_gen,self.ncol_gen,self.dict_gen,self.str_gen = gen
+                    self.returner_signal.emit(self.nrow_gen,self.ncol_gen,self.dict_gen,self.str_gen,self.mode)
+
+            
+            if self.mode == 1:  #MODE-1 KISMINDA GENERAOTOR MATRİX TANIMLANDİ MODE-1 DE GENERATOR MEVCUT DEGİL MATRİX FORMATLI UNPACKİNG YAPILDI
+                self.losses_e,self.accs_e,self.keys_e = self.main_gen #MATRİX   
+                self.returner_signal_e.emit(self.losses_e,self.accs_e)
+
+        else:
+            print(self.mode)
 
 
 class ThreadSide(QObject):
@@ -55,9 +102,16 @@ class MainGui(QMainWindow):
         self.threadObject = QThread(self)
         self.threadPool.moveToThread(self.threadObject)
 
+        self.plotter_threadF = QThread(self)
+        self.plotter_classF = PlotterThreadSide(None,None)
+        self.plotter_classF.moveToThread(self.plotter_threadF)
+
         '''SIGNALS'''
         self.ifilesignal = self.threadPool.ifilesignal
         self.efilesignal = self.threadPool.efilesignal
+        self.returner_signal = self.plotter_classF.returner_signal
+        self.returner_signal_e = self.plotter_classF.returner_signal_e
+        self.renderer_signal = self.plotter_classF.renderer_signal
 
         '''ANA DEGİSKENLER'''
         self.curr_selected = []
@@ -317,11 +371,13 @@ class MainGui(QMainWindow):
 
         self.model_datas_window_label = QLabel('Modelin Mevcut Ögrenme Grafikleri')
 
-        self.show_current_model_datas_btn_X = QPushButton('Mevcut değerleri göster')
-        self.clear_current_model_data_graphs_X = QPushButton('Monitörleri temizle')
+        self.get_current_model_datas_btn_X = QPushButton('Mevcut değerleri Çek')
+        self.show_current_model_datas_btn_X = QPushButton('Mevcut değerleri Göster')
+        self.clear_current_model_data_graphs_X = QPushButton('Monitörleri temizle-1')
 
+        self.get_current_model_datas_btn_Y = QPushButton('Mevcut değerleri Çek')
         self.show_current_model_datas_btn_Y = QPushButton('Mevcut değerleri göster')
-        self.clear_current_model_data_graphs_Y = QPushButton('Monitörleri temizle')
+        self.clear_current_model_data_graphs_Y = QPushButton('Monitörleri temizle-2')
 
         self.lst_sys_splitter.addWidget(self.clear_flowers_list)            
         self.lst_sys_splitter.addWidget(self.flowers_lst)
@@ -353,11 +409,13 @@ class MainGui(QMainWindow):
         ce1.addWidget(self.navbarY)
         ce1.addWidget(self.canvas_second)
         ce1.addWidget(self.show_current_model_datas_btn_X)
+        ce1.addWidget(self.get_current_model_datas_btn_X)
         ce1.addWidget(self.clear_current_model_data_graphs_X)
 
         ce2.addWidget(self.navbarZ)
         ce2.addWidget(self.canvas_last)
         ce2.addWidget(self.show_current_model_datas_btn_Y)
+        ce2.addWidget(self.get_current_model_datas_btn_Y)
         ce2.addWidget(self.clear_current_model_data_graphs_Y)
 
         layout_second.addWidget(ce1)
@@ -371,6 +429,12 @@ class MainGui(QMainWindow):
         self.define_external_model_btn.clicked.connect(self.define_external_model)
         self.inspect_internal_model_btn.clicked.connect(lambda: self.inspectModel(self.IPath, self.IName, self.IType))
         self.inspect_external_model_btn.clicked.connect(lambda: self.inspectModel(self.EPath, self.EName, self.EType))
+        self.get_current_model_datas_btn_X.clicked.connect(lambda: self.ignitPlotter('logPlotter',0))
+        self.get_current_model_datas_btn_Y.clicked.connect(lambda: self.ignitPlotter('logPlotter',1))
+        self.show_current_model_datas_btn_X.clicked.connect(lambda: self.Renderer(0))
+        self.show_current_model_datas_btn_Y.clicked.connect(lambda: self.Renderer(1))
+        self.clear_current_model_data_graphs_X.clicked.connect(lambda: self.clear_canvases(0))
+        self.clear_current_model_data_graphs_Y.clicked.connect(lambda: self.clear_canvases(1))
         self.define_all_models_btn.clicked.connect(self.addModels)
         self.clear_all_models_btn.clicked.connect(self.clearModels)
         self.reset_internal_path.clicked.connect(self.resetIPath)
@@ -380,7 +444,7 @@ class MainGui(QMainWindow):
         self.apply_target_path.clicked.connect(self.define_target_folder_path)
 
         '''FUNCTION CALLS'''
-        self.plotGraphs(mode='test')
+        self.ignitPlotter(mode='test')
 
         '''TIMERS'''
         self.sizeOptimerTimer = QTimer(self)
@@ -390,6 +454,8 @@ class MainGui(QMainWindow):
         '''SIGNAL-SLOTS-PYQTSİGNALS'''
         self.ifilesignal.connect(self.addModelsWithList)
         self.efilesignal.connect(self.addModelsWithList)
+        self.returner_signal.connect(self.graphPlotter)
+        self.returner_signal_e.connect(self.graphPlotterE)
 
         self.setCentralWidget(self.tabWidget)
 
@@ -398,26 +464,91 @@ class MainGui(QMainWindow):
         self.setStyleSheet(qss_file.read())
         qss_file.close()
 
-    def plotGraphs(self,array=None,label=None,mode=None):
-        function_status = 1
-        nrow,ncol,index = 0,0,0
+    
+    def graphPlotter(self,nrow,ncol,dct,key,mode):
+        self.secondaxesobj[nrow,ncol].plot(dct[key],label=key)
+        self.secondaxesobj[nrow,ncol].legend()
 
-        main_labels = ['Accuracy','Loss','Validation Accuracy','Validation Loss','Learning Rate','F1 Score']
-        second_labels = ['Test loss','Test Accuracy','Ratio of validation accuracy to validation loss']
+    def Renderer(self,mode):
+        status = 0
+        try:
+            if mode == 0:
+                self.canvas_second.draw()
+                status = 1
+            
+            if mode == 1:
+                self.canvas_last.draw()
+                status = 1
 
-        if mode is not None:
-            function_status = 1
 
-        else:
-            function_status = 0
+        except:
+            pass
 
-        if array is not None or label is not None or mode == 'test':
-            function_status = 1
+        finally:
+            try:
+                if status == 1:
+                    QMessageBox.information(self,'Bilgilendirme','Veriler çekiliyor....')
+                
+                else:
+                    QMessageBox.warning(self,'Uyarı','Veriler aktarılırken bir sorun meyadana geldi...')
+
+            except:
+                pass
+
+            finally:
+                status = 0
+
+    def clear_canvases(self,mode):
+        if mode == 0:
+            for axes_vector in self.secondaxesobj:
+                for axes in axes_vector:
+                    axes.clear()
+                    self.canvas_second.draw()
+
+        if mode == 1:
+            for axes in self.lastaxesobj:
+                axes.clear()
+                self.canvas_last.draw()
+            
+
+    def graphPlotterE(self,loss_arr,acc_arr):
+        print(loss_arr,acc_arr)
+        if len(loss_arr) > 1 and len(acc_arr) > 1:
+            self.lastaxesobj[0].plot(loss_arr,label='Test Loss')
+            self.lastaxesobj[1].plot(acc_arr,label='Test Accuracy')
+            self.lastaxesobj[0].legend()
+            self.lastaxesobj[1].legend()
+            self.canvas_last.draw()
+            
         
+        else:
+            QMessageBox.information(self,'Dikkat','Test sonuçlarının sayısı 1 den az olduğu için grafik çizilemiyor lütfen değerlere bakmak için bekleyiniz')
+            self.dock_area = QDockWidget(self)
+            widget,layout = QWidget(),QHBoxLayout()
+            widget.setLayout(layout)
+
+            self.dock_area.setWidget(widget)
+
+            for widget in [QLabel(f'Test loss: {loss_arr[0]}'),QLabel(f'Test Accuracy: {acc_arr[0]}')]:
+                layout.addWidget(widget)
+
+            self.dock_area.show()
+
+
+    def ignitPlotter(self,mode=None,logtype=None):
+        function_status = 1
+
+        if mode is not None and logtype is not None:
+            function_status = 1
+
         else:
             function_status = 0
 
         if function_status == 1:
+            nrow, ncol, index = 0, 0, 0
+            main_labels = ['Accuracy', 'Loss', 'Validation Accuracy', 'Validation Loss', 'Learning Rate', 'F1 Score']
+            second_labels = ['Test loss', 'Test Accuracy', 'Ratio of validation accuracy to validation loss']
+
             if mode == 'test':
                 for axes_vector in self.secondaxesobj:
                     for axes in axes_vector:
@@ -442,9 +573,48 @@ class MainGui(QMainWindow):
                         pass
                 index = 0
 
+        if mode == 'logPlotter':
+            if logtype == 0:
+                path = r"logs\SigmoidModelLogs\datas.txt"
+
+                self.plotter_thread = QThread(self)
+                self.plotter_class = PlotterThreadSide(path,0)
+                self.plotter_class.moveToThread(self.plotter_thread)
+
+                self.returner_signal = self.plotter_class.returner_signal
+                self.returner_signal_e = self.plotter_class.returner_signal_e
+                self.renderer_signal = self.plotter_classF.renderer_signal
+
+                self.returner_signal.connect(self.graphPlotter)
+                #self.renderer_signal.connect(self.Renderer)
+
+                self.plotter_thread.started.connect(self.plotter_class.referanceFlow)
+                self.plotter_thread.start()
+
+
+            elif logtype == 1:
+                path = r"logs\SigmoidModelLogs\evaulates.txt"
+
+                self.plotter_threadF = QThread(self)
+                self.plotter_classF = PlotterThreadSide(path,1)
+                self.plotter_classF.moveToThread(self.plotter_threadF)
+
+                self.returner_signal = self.plotter_classF.returner_signal
+                self.returner_signal_e = self.plotter_classF.returner_signal_e
+                self.renderer_signal = self.plotter_classF.renderer_signal
+
+                self.returner_signal.connect(self.graphPlotter)
+                self.returner_signal_e.connect(self.graphPlotterE)
+
+                self.plotter_threadF.started.connect(self.plotter_classF.referanceFlow)
+                self.plotter_threadF.start()
+
+
+            else:
+                pass
+
         else:
             pass
-
 
 
     def sizeOptimize(self):
