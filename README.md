@@ -17,6 +17,8 @@
 | Overfitting Risk durumu          | Düşük seviyede risk taşıyor|
 | Underfitting Durumu              | Çok düşük seviyede risk taşıyor|
 | Çıkış                            | SIGMOID|
+| Tensorflow Sürümü                | 2.20.0|
+| Keras Sürümü                     | 3.13.0|
 
 **Model eğitim grafikleri:**
 
@@ -27,3 +29,11 @@
                           DETAYLI BILGILENDIRME BELGESI
 
 [plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/24870976/plant_disease_projesi_durum_raporu.pdf)
+
+
+                          ONEMLİ DETAY
+
+
+Bu projedeki harici-dahili model sistemindeki harici verilecek modeller için; girdi modellerinin **Tensorflow'un *2.20.0* sürümünde** ve **Keras'ın ise *3.13.0* sürümünde** kaydedilmiş olması önemlidir
+Aksi halde program size model sürümü uyuşmazlığı benzeri bir hata verecektir veya çoğu zaman sessiz bir şekilde model tanımlanamamasına rağmen hata vermeyecektir ancak tahmin yaparken kesinlike "Model dosyası Bozuk" hatasını sizlere verecektir
+Özetle; Lütfen yukarıda belirttiğim kriterlere uyacak modelleri harici olarak programa vermeye özen gösterin harici modeliniz yok ise programda eğittiğim modelleri kullanmanız çok daha sağlıklıdır hatta teknik olarak eğittiğim modelleri kullanmanız harici model kullanmanızdan çok daha basit ve etkili olabilir çoğu zamanda tabi istisnalarda olabilir 
