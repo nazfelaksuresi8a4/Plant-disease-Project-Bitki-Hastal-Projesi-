@@ -1,3 +1,5 @@
+'''31.01.2026 / 20:21:45'''
+
 import os
 
 import artifical_intelligence
@@ -349,7 +351,7 @@ class MainGui(QMainWindow):
                     self.pname = pathname
             self.rname = flow_data
 
-            item = QListWidgetItem(f'Görsel yolu:{self.rname}\nGörsel adı:{self.pname}')
+            item = QListWidgetItem(f'Görsel yolu;{self.rname}\nGörsel adı;{self.pname}')
             item.setIcon(QIcon(flow_data))
 
             self.flowers_lst.addItem(item)
@@ -519,7 +521,6 @@ class MainGui(QMainWindow):
             self.lastaxesobj[0].legend()
             self.lastaxesobj[1].legend()
             self.canvas_last.draw()
-            
         
         else:
             QMessageBox.information(self,'Dikkat','Test sonuçlarının sayısı 1 den az olduğu için grafik çizilemiyor lütfen değerlere bakmak için bekleyiniz')
@@ -636,22 +637,26 @@ class MainGui(QMainWindow):
         batch = self.change_batch_size.currentText()
 
         try:
-            self.startAnalysis(modeX=mode,
-                            batchX=batch,
-                            mtypeX=mtype)
+            self.startAnalysis(modeX=mode.strip(),
+                            batchX=batch.strip(),
+                            mtypeX=mtype.strip())
+            
         except Exception as e0fx:
-            if mtype == 'internal':
+            if mtype.strip() == 'Harici':
                 QMessageBox.critical(self,'UYARİ',f'Lutfen seçtiğiniz modelin çalışır durumda olup kontrol ediniz. Model şu an için kullanılamıyor\nHATA:{e0fx}\nMODEL:{self.IName}\nMODEL TÜRÜ: {mtype}')
-            elif mtype == 'external':
+            elif mtype.strip() == 'Dahili':
                 QMessageBox.critical(self,'UYARİ',f'Lutfen seçtiğiniz modelin çalışır durumda olup kontrol ediniz. Model şu an için kullanılamıyor\nHATA:{e0fx}\nMODEL:{self.EName}\nMODEL TÜRÜ: {mtype}')
             
             else:
                 QMessageBox.critical(self,'UYARİ',f'Lutfen seçtiğiniz modelin çalışır durumda olup kontrol ediniz. Model şu an için kullanılamıyor\nHATA:{e0fx}\MODEL TÜRÜ VE MODELİN KENDİSİ PROGRAM TARAFİNDAN BULUNAMADİ')
+                print(mtype.strip())
+                print(mode.strip())
+                print(batch.strip())
 
     def startAnalysis(self, modeX, batchX, mtypeX):
         '''Model variables'''
-        self.modeX = modeX
-        self.batchX = int(batchX.split(':')[1])
+        self.modeX = modeX.strip()
+        self.batchX = int(batchX.split(':')[1].strip())
 
         '''Logic variables'''
         date, time = str(dt.datetime.now().date()), str(dt.datetime.now().strftime('%H:%M:%S'))
@@ -662,26 +667,24 @@ class MainGui(QMainWindow):
         self.internal_selected_model, self.external_selected_model = self.IPath, self.EPath
 
         if mtypeX == 'internal':
-            self.internal_selected_model, self.external_selected_model = self.internal_selected_model.split(':')[
-                1], None
+            self.internal_selected_model, self.external_selected_model = self.internal_selected_model.split(':')[1].strip()
 
         elif mtypeX == 'external':
-            self.internal_selected_model, self.external_selected_model = None, self.external_selected_model.split(':')[
-                1]
+            self.internal_selected_model, self.external_selected_model = None, self.external_selected_model.split(':')[1].strip()
 
         curr_matrix = self.current_canvas_matrix
 
         if curr_matrix is not None:
             if self.internal_selected_model is not None:
                 self.prediction_output = self.artificalIntelligenceModule.predictModel(
-                    model=self.internal_selected_model.split(':')[1],
+                    model=self.internal_selected_model.split(';')[1].strip(),
                     matlike=curr_matrix,
                     batch_size=self.batchX,
                     mode=self.modeX)
 
             elif self.external_selected_model is not None:
                 self.prediction_output = self.artificalIntelligenceModule.predictModel(
-                    model=self.internal_selected_model.split(':')[1],
+                    model=self.internal_selected_model.split(';')[1].strip(),
                     matlike=curr_matrix,
                     batch_size=batchX,
                     mode=modeX)
@@ -708,7 +711,7 @@ class MainGui(QMainWindow):
                             self.pred = 'Bitki hasta'
 
                     item_output = QTableWidgetItem(self.pred)
-                    item_curr_canvas = QTableWidgetItem(str(str(self.curr_img_name).split('\n')[1].split(':')[1]))
+                    item_curr_canvas = QTableWidgetItem(str(str(self.curr_img_name).split('\n')[1].split(';')[1]))
                     item_curr_img_name = QTableWidgetItem(f'{str(self.current_selected_canvas)}. Kanvas')
 
                     self.modelPredictionTableWidget.setItem(self.col, 0, item_raw_output)
@@ -733,7 +736,7 @@ class MainGui(QMainWindow):
         self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini', 'Tahmin', 'Zaman kodu','Mevcut kanvas','Görsel ismi'])
 
     def inspectModel(self, mpath, mname, mtype):
-        output, code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(':')[1])
+        output, code = artifical_intelligence.ArtificalIntelligence().returnModelSummary(mpath.split(';')[1])
 
         if code == 0:
             if isinstance(output, str):
@@ -743,25 +746,27 @@ class MainGui(QMainWindow):
                 print(type(output))
 
         elif code == 1:
-            pass
+            return(output,code)
 
         elif code == 2:
-            pass
+            return(output,code)
 
         else:
-            pass
+            return(output,code)
 
     def define_internal_model(self):
         self.curr_selected = self.internal_model_file_system_model.selectedItems()
 
         if len(self.curr_selected) >= 1:
             mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
-            if mtype.split(':')[1] == ' Dahili':
+            mtype,mpath,mname = mtype.strip(),mpath.strip(),mname.strip()
+
+            if mtype.split(';')[1].strip() == ' Dahili':
                 self.IType, self.IName, self.IPath = mtype, mname, mpath
 
 
             else:
-                print(mtype.split(':')[1])
+                print(mtype.split(';')[1])
 
             self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')
             self.file_sys_internal_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
@@ -774,12 +779,12 @@ class MainGui(QMainWindow):
 
         if len(self.curr_selected) >= 1:
             mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
-            if mtype.split(':')[1] == ' Dahili':
+            if mtype.split(';')[1] == ' Dahili':
                 self.IType, self.IName, self.IPath = mtype, mname, mpath
-            elif mtype.split(':')[1] == ' Harici':
+            elif mtype.split(';')[1] == ' Harici':
                 self.EType, self.EName, self.EPath = mtype, mname, mpath
             else:
-                print(mtype.split(':')[1])
+                print(mtype.split(';')[1])
 
             self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')
             self.file_sys_external_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
@@ -833,8 +838,8 @@ class MainGui(QMainWindow):
             last_selected_text = last_selected.text()
 
             splitted_text = last_selected_text.split('\n')
-            path = splitted_text[0].split('Görsel yolu:')[1]
-            name = splitted_text[1].split('Görsel adı:')[1]
+            path = splitted_text[0].split('Görsel yolu;')[1]
+            name = splitted_text[1].split('Görsel adı;')[1]
 
             print(f'path:{path}\nname:{name}')
 
@@ -879,7 +884,7 @@ class MainGui(QMainWindow):
             print(self.rootpath)
 
             icon = QIcon(self.rootpath)
-            item = QListWidgetItem(f'Görsel yolu:{self.rootpath}\nGörsel adı:{self.rootname}')
+            item = QListWidgetItem(f'Görsel yolu;{self.rootpath}\nGörsel adı;{self.rootname}')
 
             item.setIcon(icon)
             self.flowers_lst.addItem(item)
@@ -888,7 +893,7 @@ class MainGui(QMainWindow):
             try:
                 print(e3)
                 icon = QIcon(self.rootname)
-                item = QListWidgetItem(f'Görsel yolu:{self.rootpath}\nGörsel adı:{self.rootname}')
+                item = QListWidgetItem(f'Görsel yolu;{self.rootpath}\nGörsel adı;{self.rootname}')
             except Exception as e4:
                 print(e4)
                 QMessageBox.warning(self, 'Hata',
@@ -915,9 +920,9 @@ class MainGui(QMainWindow):
 
             if isinstance(internal_models, list) and isinstance(external_models, list):
                 if len(internal_models) >= 1 and len(external_models) >= 1:
-                    internal_models = [f'Model türü: Dahili\nModel ismi: {x}\nModel yolu:{self.ipath}/{x}' for x in
+                    internal_models = [f'Model türü; Dahili\nModel ismi; {x}\nModel yolu; {self.ipath}\{x}' for x in
                                        internal_models]
-                    external_models = [f'Model türü: Harici\nModel ismi: {x}\nModel yolu:{self.epath}/{x}' for x in
+                    external_models = [f'Model türü; Harici\nModel ismi; {x}\nModel yolu; {self.epath}\{x}' for x in
                                        external_models]
 
             self.threadIgniter(internal_models, external_models)
