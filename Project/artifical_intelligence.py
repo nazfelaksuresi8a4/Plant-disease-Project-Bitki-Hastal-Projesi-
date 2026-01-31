@@ -1,3 +1,5 @@
+'''31.01.2026 / 20:21:45'''
+
 import tensorflow as tf
 from tensorflow.keras.models import Sequential,load_model
 from tensorflow.keras.layers import  Dense,Conv2D,MaxPooling2D
@@ -39,7 +41,9 @@ class ArtificalIntelligence:
     def returnModelSummary(self,filepath):
         try:
             if isinstance(filepath,str) and filepath.endswith('.h5'):
-                model = load_model(filepath)
+                print('current summary: ' + filepath)
+                print(filepath)
+                model = load_model(filepath.strip())
                 arr,string = [],''
 
                 summary = model.summary(print_fn=lambda x: arr.append(x + '\n'))
