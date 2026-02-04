@@ -36,5 +36,6 @@ class LoggPlotterEvaulate:
             return (self.loss_arr,self.acc_arr,['Loss','Accuracy'])
 
 
-LoggPlotterEvaulate(r"C:\Users\alper\Desktop\Plant Disease Project\logs\SigmoidModelLogs\evaulates.txt").plotLog()
+#LoggPlotterEvaulate(r"C:\Users\alper\Desktop\Plant Disease Project\logs\SigmoidModelLogs\evaulates.txt").plotLog()
+
 
