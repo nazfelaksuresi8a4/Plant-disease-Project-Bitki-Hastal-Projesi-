@@ -1,4 +1,4 @@
-'''31.01.2026 / 20:21:45'''
+'''4.02.2026 / 23:50:45'''
 
 import os
 
@@ -530,14 +530,25 @@ class MainGui(QMainWindow):
 
             self.dock_area.setWidget(widget)
 
-            for widget in [QLabel(f'Test loss: {loss_arr[0]}'),QLabel(f'Test Accuracy: {acc_arr[0]}')]:
-                layout.addWidget(widget)
+            if len(loss_arr) > 0 and len(acc_arr) > 0:
+                for widget in [QLabel(f'Test loss: {loss_arr[0]}'),QLabel(f'Test Accuracy: {acc_arr[0]}')]:
+                    layout.addWidget(widget)
+
+            else:
+                QMessageBox.warning(self,'UYARİ','Test sonuçları bulunamadi!')
 
             self.dock_area.show()
 
 
     def ignitPlotter(self,mode=None,logtype=None):
+        pred_type = 0
         function_status = 1
+
+        if self.change_analysis_mode.currentText() == 'Hasta-Saglikli Tespiti':
+            pred_type = 0
+        
+        elif self.change_analysis_mode.currentText() == 'Hastalik Tespiti':
+            pred_type = 1
 
         if mode is not None and logtype is not None:
             function_status = 1
@@ -576,39 +587,75 @@ class MainGui(QMainWindow):
 
         if mode == 'logPlotter':
             if logtype == 0:
-                path = r"logs\SigmoidModelLogs\datas.txt"
+                if pred_type == 0:
+                    path = r"logs\SigmoidModelLogs\datas.txt"
 
-                self.plotter_thread = QThread(self)
-                self.plotter_class = PlotterThreadSide(path,0)
-                self.plotter_class.moveToThread(self.plotter_thread)
+                    self.plotter_thread = QThread(self)
+                    self.plotter_class = PlotterThreadSide(path,0)
+                    self.plotter_class.moveToThread(self.plotter_thread)
 
-                self.returner_signal = self.plotter_class.returner_signal
-                self.returner_signal_e = self.plotter_class.returner_signal_e
-                self.renderer_signal = self.plotter_classF.renderer_signal
+                    self.returner_signal = self.plotter_class.returner_signal
+                    self.returner_signal_e = self.plotter_class.returner_signal_e
+                    self.renderer_signal = self.plotter_classF.renderer_signal
 
-                self.returner_signal.connect(self.graphPlotter)
-                #self.renderer_signal.connect(self.Renderer)
+                    self.returner_signal.connect(self.graphPlotter)
+                    #self.renderer_signal.connect(self.Renderer)
 
-                self.plotter_thread.started.connect(self.plotter_class.referanceFlow)
-                self.plotter_thread.start()
+                    self.plotter_thread.started.connect(self.plotter_class.referanceFlow)
+                    self.plotter_thread.start()
+                
+                elif pred_type == 1:
+                    path = r"logs\SoftmaxModelLogs\datas.txt"
+
+                    self.plotter_thread = QThread(self)
+                    self.plotter_class = PlotterThreadSide(path,0)
+                    self.plotter_class.moveToThread(self.plotter_thread)
+
+                    self.returner_signal = self.plotter_class.returner_signal
+                    self.returner_signal_e = self.plotter_class.returner_signal_e
+                    self.renderer_signal = self.plotter_classF.renderer_signal
+
+                    self.returner_signal.connect(self.graphPlotter)
+                    #self.renderer_signal.connect(self.Renderer)
+
+                    self.plotter_thread.started.connect(self.plotter_class.referanceFlow)
+                    self.plotter_thread.start()
 
 
             elif logtype == 1:
-                path = r"logs\SigmoidModelLogs\evaulates.txt"
+                if pred_type == 0:
+                    path = r"logs\SoftmaxModelLogs\evaulates.txt"
 
-                self.plotter_threadF = QThread(self)
-                self.plotter_classF = PlotterThreadSide(path,1)
-                self.plotter_classF.moveToThread(self.plotter_threadF)
+                    self.plotter_threadF = QThread(self)
+                    self.plotter_classF = PlotterThreadSide(path,1)
+                    self.plotter_classF.moveToThread(self.plotter_threadF)
 
-                self.returner_signal = self.plotter_classF.returner_signal
-                self.returner_signal_e = self.plotter_classF.returner_signal_e
-                self.renderer_signal = self.plotter_classF.renderer_signal
+                    self.returner_signal = self.plotter_classF.returner_signal
+                    self.returner_signal_e = self.plotter_classF.returner_signal_e
+                    self.renderer_signal = self.plotter_classF.renderer_signal
 
-                self.returner_signal.connect(self.graphPlotter)
-                self.returner_signal_e.connect(self.graphPlotterE)
+                    self.returner_signal.connect(self.graphPlotter)
+                    self.returner_signal_e.connect(self.graphPlotterE)
 
-                self.plotter_threadF.started.connect(self.plotter_classF.referanceFlow)
-                self.plotter_threadF.start()
+                    self.plotter_threadF.started.connect(self.plotter_classF.referanceFlow)
+                    self.plotter_threadF.start()
+                
+                elif pred_type == 1:
+                    path = r"logs\SoftmaxModelLogs\evaulates.txt"
+
+                    self.plotter_threadF = QThread(self)
+                    self.plotter_classF = PlotterThreadSide(path,1)
+                    self.plotter_classF.moveToThread(self.plotter_threadF)
+
+                    self.returner_signal = self.plotter_classF.returner_signal
+                    self.returner_signal_e = self.plotter_classF.returner_signal_e
+                    self.renderer_signal = self.plotter_classF.renderer_signal
+
+                    self.returner_signal.connect(self.graphPlotter)
+                    self.returner_signal_e.connect(self.graphPlotterE)
+
+                    self.plotter_threadF.started.connect(self.plotter_classF.referanceFlow)
+                    self.plotter_threadF.start()
 
 
             else:
