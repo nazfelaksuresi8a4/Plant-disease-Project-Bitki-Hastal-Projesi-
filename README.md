@@ -20,7 +20,9 @@
 | Tensorflow Sürümü                | 2.20.0|
 | Keras Sürümü                     | 3.13.0|
 | Desteklenen model formatları     | .h5   |
-
+| Desteklenen görsel boyutları     | 224x224 |
+| Desteklenen görsel boyutu:       | 1,224,224 |
+| Batch Dimension:                 | EVET       |
 **Model eğitim grafikleri:**
 
 
