@@ -1,3 +1,5 @@
+'''4.02.2026 23:53:00'''
+
 import datetime as dt 
 
 class Logger:
@@ -14,14 +16,20 @@ class Logger:
             with open(self.logfile_path,'a') as logfile:
                 logfile.write(f'Tarih/Saat: {self.date}/{self.hour}\n')
 
-                for key,item in self.history.history.items():
-                    logfile.write(f'{key}: {item}\n')
-            
-            with open(self.evaulate_path,'a') as elogfile:
-                test_loss,test_acc = self.model.evaluate(self.test_data)
+                if type(self.history) != dict:
+                    for key,item in self.history.history.items():
+                        logfile.write(f'{key}: {item}\n')
                 
-                elogfile.write(f'Tarih/Saat: {self.date}/{self.hour}')
-                elogfile.write(f'\ntest loss; {test_loss}, test accuracy: {test_acc}\n')
-        
+                elif type(self.history) == dict:
+                    for key,item in self.history.items():
+                        logfile.write(f'{key}: {item}\n')
+            
+            if self.evaulate_path is not None and self.logfile_path is not None and self.test_data is not None:
+                with open(self.evaulate_path,'a') as elogfile:
+                    test_loss,test_acc = self.model.evaluate(self.test_data)
+                    
+                    elogfile.write(f'Tarih/Saat: {self.date}/{self.hour}')
+                    elogfile.write(f'\ntest loss; {test_loss}, test accuracy: {test_acc}\n')
+
         else:
             print('log dosyaları belirtilmemiş')
