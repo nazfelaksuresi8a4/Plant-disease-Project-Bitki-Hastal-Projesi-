@@ -51,4 +51,5 @@ class Plotter:
         else:
             nrow,ncol = 0,0
 
-Plotter().plotter(logfile_path)
+#Plotter().plotter(logfile_path)
+
