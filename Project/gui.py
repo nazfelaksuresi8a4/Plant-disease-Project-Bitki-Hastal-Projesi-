@@ -1,4 +1,4 @@
-'''4.02.2026 / 23:50:45'''
+'''5.02.2026-05:25:44'''
 
 import os
 
@@ -712,6 +712,7 @@ class MainGui(QMainWindow):
 
         self.artificalIntelligenceModule = artifical_intelligence.ArtificalIntelligence()
         self.internal_selected_model, self.external_selected_model = self.IPath, self.EPath
+        print(self.IPath,self.EPath)
 
         if mtypeX == 'internal':
             self.internal_selected_model, self.external_selected_model = self.internal_selected_model.split(':')[1].strip()
@@ -728,7 +729,7 @@ class MainGui(QMainWindow):
                     matlike=curr_matrix,
                     batch_size=self.batchX,
                     mode=self.modeX)
-
+            
             elif self.external_selected_model is not None:
                 self.prediction_output = self.artificalIntelligenceModule.predictModel(
                     model=self.internal_selected_model.split(';')[1].strip(),
@@ -787,19 +788,25 @@ class MainGui(QMainWindow):
 
         if code == 0:
             if isinstance(output, str):
-                self.model_techinc_informations.setText(f'{self.EPath}\n{self.EName}\n{self.EType}\n{output}')
+                if mtype.split(';')[1].strip() == 'Dahili':
+                    self.model_techinc_informations.setText(f'{self.IPath}\n{self.IName}\n{self.IType}\n{output}')
 
-            else:
+                elif mtype.split(';')[1].strip() == 'Harici':
+                    self.model_techinc_informations.setText(f'{self.EPath}\n{self.EName}\n{self.EType}\n{output}')
+
+                else:
+                    print(mtype.split(';')[1].strip())
+            else:   
                 print(type(output))
 
         elif code == 1:
-            return(output,code)
+            print(output,code)
 
         elif code == 2:
-            return(output,code)
+            print(output,code)
 
         else:
-            return(output,code)
+            print(output,code)
 
     def define_internal_model(self):
         self.curr_selected = self.internal_model_file_system_model.selectedItems()
@@ -808,14 +815,13 @@ class MainGui(QMainWindow):
             mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
             mtype,mpath,mname = mtype.strip(),mpath.strip(),mname.strip()
 
-            if mtype.split(';')[1].strip() == ' Dahili':
+            if mtype.split(';')[1].strip() == 'Dahili':
                 self.IType, self.IName, self.IPath = mtype, mname, mpath
-
 
             else:
                 print(mtype.split(';')[1])
 
-            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')
+            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}'.replace('/','\\'))
             self.file_sys_internal_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
 
         else:
