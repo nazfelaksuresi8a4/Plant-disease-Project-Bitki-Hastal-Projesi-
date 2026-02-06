@@ -45,3 +45,6 @@ Aksi halde program size model sürümü uyuşmazlığı benzeri bir hata verecek
 Özetle; Lütfen yukarıda belirttiğim kriterlere uyacak modelleri harici olarak programa vermeye özen gösterin harici modeliniz yok ise programda eğittiğim modelleri kullanmanız çok daha sağlıklıdır hatta teknik olarak eğittiğim modelleri kullanmanız harici model kullanmanızdan çok daha basit ve etkili olabilir çoğu zamanda tabi istisnalarda olabilir ayrıca program sadece .h5 formatlı modeller ile çalışabilir
 
 
+
+(+)DC Model -> Disease Classification Model = Sigmoid 0-1
+(+)DF Model -> Disease Finding Model => Softmax Multiclass
