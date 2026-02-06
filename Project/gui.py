@@ -1,4 +1,4 @@
-'''6.02.2026-03:11:24'''
+'''7.0.2.2026-02:55:15'''
 
 import os
 
@@ -237,7 +237,7 @@ class MainGui(QMainWindow):
         self.change_model_type = QComboBox()
         self.change_batch_size = QComboBox()
 
-        itemsX, itemsY = ['Hasta-Saglikli Tespiti', 'Hastalik Tespiti'], ['Harici', 'Dahili']
+        itemsX, itemsY = ['Hasta-Saglikli-Tespiti', 'Hastalik-Tespiti'], ['Harici', 'Dahili']
         for itemX, itemY in zip(itemsX, itemsY):
             self.change_analysis_mode.addItem(itemX)
             self.change_model_type.addItem(itemY)
@@ -468,7 +468,7 @@ class MainGui(QMainWindow):
 
     
     def graphPlotter(self,nrow,ncol,dct,key,mode):
-        self.secondaxesobj[nrow,ncol].plot(dct[key],label=key)
+        self.secondaxesobj[nrow,ncol].plot(dct[key],label=f'{key}')
         self.secondaxesobj[nrow,ncol].legend()
 
     def Renderer(self,mode):
@@ -544,10 +544,10 @@ class MainGui(QMainWindow):
         pred_type = 0
         function_status = 1
 
-        if self.change_analysis_mode.currentText() == 'Hasta-Saglikli Tespiti':
+        if self.change_analysis_mode.currentText().strip() == 'Hasta-Saglikli-Tespiti':
             pred_type = 0
         
-        elif self.change_analysis_mode.currentText() == 'Hastalik Tespiti':
+        elif self.change_analysis_mode.currentText().strip() == 'Hastalik-Tespiti':
             pred_type = 1
 
         if mode is not None and logtype is not None:
@@ -743,19 +743,29 @@ class MainGui(QMainWindow):
                     self.modelPredictionTableWidget.setRowCount(self.col + 1)
 
                 if isinstance(self.prediction_output, np.ndarray):
-                    item_raw_output = QTableWidgetItem(str(self.prediction_output[0][0]))
+                    item_raw_output = QTableWidgetItem(str(np.max(self.prediction_output[0])))
                     item_output = None
                     item_timecode = QTableWidgetItem(f'{date}--{time}')
 
-                    if isinstance(self.prediction_output[0][0], np.float32):
-                        if self.prediction_output[0][0] > (0.5) + randint(0, 5) / 100:  # 0-5 / 100 random seed
-                            self.pred = 'Saglikli'
+                    if self.change_analysis_mode.currentText().strip() == 'Hasta-Saglikli-Tespiti':
+                        if isinstance(self.prediction_output[0][0], np.float32):
+                            if self.prediction_output[0][0] > (0.5) + randint(0, 5) / 100:  # 0-5 / 100 random seed
+                                self.pred = 'Saglikli'
 
-                        elif self.prediction_output[0][0] >= (0.4) + randint(0, 5) / 100:  # 0-5 / 100 random seed
-                            self.pred = 'Kısmen Saglikli'
+                            elif self.prediction_output[0][0] >= (0.4) + randint(0, 5) / 100:  # 0-5 / 100 random seed
+                                self.pred = 'Kısmen Saglikli'
 
-                        else:
-                            self.pred = 'Bitki hasta'
+                            else:
+                                self.pred = 'Bitki hasta'
+                    
+                    elif self.change_analysis_mode.currentText().strip() == 'Hastalik-Tespiti':
+                        if len(self.prediction_output[0]) == 4:
+                            self.softmax_labels_dictionary = {0: 'domates bakteri lekesi',
+                                                              1: 'Domates Erken yanıklık', 
+                                                              2: 'Domates Geç yanıklığı',
+                                                              3: 'Domates Septoria yaprak lekeleri'}
+
+                            self.pred = self.softmax_labels_dictionary[np.argmax(self.prediction_output[0])]
 
                     item_output = QTableWidgetItem(self.pred)
                     item_curr_canvas = QTableWidgetItem(str(str(self.curr_img_name).split('\n')[1].split(';')[1]))
