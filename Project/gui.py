@@ -1,4 +1,4 @@
-'''5.02.2026-05:25:44'''
+'''6.02.2026-03:11:24'''
 
 import os
 
@@ -684,9 +684,8 @@ class MainGui(QMainWindow):
         batch = self.change_batch_size.currentText()
 
         try:
-            self.startAnalysis(modeX=mode.strip(),
-                            batchX=batch.strip(),
-                            mtypeX=mtype.strip())
+            self.analysis_thread = threading.Thread(target=self.startAnalysis,args=[mode.strip(),batch.strip(),mtype.strip()],daemon=False)
+            self.analysis_thread.start()
             
         except Exception as e0fx:
             if mtype.strip() == 'Harici':
