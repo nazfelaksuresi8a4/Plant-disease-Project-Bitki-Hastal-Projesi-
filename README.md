@@ -42,3 +42,7 @@ Aksi halde program size model sürümü uyuşmazlığı benzeri bir hata verecek
 Özetle; Lütfen yukarıda belirttiğim kriterlere uyacak modelleri harici olarak programa vermeye özen gösterin harici modeliniz yok ise programda eğittiğim modelleri kullanmanız çok daha sağlıklıdır hatta teknik olarak eğittiğim modelleri kullanmanız harici model kullanmanızdan çok daha basit ve etkili olabilir çoğu zamanda tabi istisnalarda olabilir ayrıca program sadece .h5 formatlı modeller ile çalışabilir
 
 
+                  **PROGRAM DİZİN YAPISI**
+
+<img width="193" height="905" alt="image" src="https://github.com/user-attachments/assets/e5be3339-5c1b-45ee-bc62-37f8220b78f3" />
+
