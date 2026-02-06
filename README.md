@@ -34,15 +34,14 @@
 [plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/24870976/plant_disease_projesi_durum_raporu.pdf)
 
 
-                          ONEMLİ DETAY
+                  **PROGRAM DİZİN YAPISI**
 
+<img width="193" height="905" alt="image" src="https://github.com/user-attachments/assets/e5be3339-5c1b-45ee-bc62-37f8220b78f3" />
+
+                          ONEMLİ DETAY
 
 Bu projedeki harici-dahili model sistemindeki harici verilecek modeller için; girdi modellerinin **Tensorflow'un *2.20.0* sürümünde** ve **Keras'ın ise *3.13.0* sürümünde** kaydedilmiş olması önemlidir
 Aksi halde program size model sürümü uyuşmazlığı benzeri bir hata verecektir veya çoğu zaman sessiz bir şekilde model tanımlanamamasına rağmen hata vermeyecektir ancak tahmin yaparken kesinlike "Model dosyası Bozuk" hatasını sizlere verecektir
 Özetle; Lütfen yukarıda belirttiğim kriterlere uyacak modelleri harici olarak programa vermeye özen gösterin harici modeliniz yok ise programda eğittiğim modelleri kullanmanız çok daha sağlıklıdır hatta teknik olarak eğittiğim modelleri kullanmanız harici model kullanmanızdan çok daha basit ve etkili olabilir çoğu zamanda tabi istisnalarda olabilir ayrıca program sadece .h5 formatlı modeller ile çalışabilir
 
-
-                  **PROGRAM DİZİN YAPISI**
-
-<img width="193" height="905" alt="image" src="https://github.com/user-attachments/assets/e5be3339-5c1b-45ee-bc62-37f8220b78f3" />
 
