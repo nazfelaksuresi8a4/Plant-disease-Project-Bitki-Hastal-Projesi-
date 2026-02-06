@@ -1,4 +1,4 @@
-## LEAF SCANNER PROJESİ DETAYLARI
+[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25116876/plant_disease_projesi_durum_raporu.pdf)## LEAF SCANNER PROJESİ DETAYLARI
 
 | Özellik                          | Açıklama |
 |----------------------------------|----------|
@@ -31,7 +31,8 @@
 
                           DETAYLI BILGILENDIRME BELGESI
 
-[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/24870976/plant_disease_projesi_durum_raporu.pdf)
+[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25116878/plant_disease_projesi_durum_raporu.pdf)
+
 
 
                   **PROGRAM DİZİN YAPISI**
@@ -47,7 +48,7 @@ Aksi halde program size model sürümü uyuşmazlığı benzeri bir hata verecek
 
 MODEL AÇILIMLARI
 ----------------------------------------------------------
-(+)DC Model -> Disease Classification Model = Sigmoid 0-1
+(+)DC Model -> Disease Classification Model => Sigmoid 0-1
 ________________________________________________________________
 (+)DF Model -> Disease Finding Model => Softmax Multiclass
 ________________________________________________________________
