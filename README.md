@@ -47,4 +47,5 @@ Aksi halde program size model sürümü uyuşmazlığı benzeri bir hata verecek
 
 
 (+)DC Model -> Disease Classification Model = Sigmoid 0-1
+----------------------------------------------------------
 (+)DF Model -> Disease Finding Model => Softmax Multiclass
