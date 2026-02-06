@@ -1,3 +1,3 @@
 **AŞAĞIDAKİ LİNKTEN MODELS REPOSUNDAKİ HER İÇERĞİE ULAŞABİLİRSİNİZ GİTHUBDAKİ 25MB SINIRI YÜZÜNDEN SOURCEFORGE'A YÜKLEMEK ZORUNDA KALDIM*
 
-https://sourceforge.net/projects/models/files/Models/
+https://sourceforge.net/projects/models/files/
