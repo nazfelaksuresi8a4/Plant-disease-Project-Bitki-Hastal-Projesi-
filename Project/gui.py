@@ -344,7 +344,7 @@ class MainGui(QMainWindow):
         self.tabWidget.addTab(widget_main, 'Sormak')
         self.tabWidget.addTab(widget_second, 'Grafikler')
         self.tabWidget.addTab(widget_finally, 'Model Eğitimi')
-        self.tabWidget.addTab(widget_google_drive, 'Bulut(Drive)')
+        self.tabWidget.addTab(widget_google_drive, 'Google')
 
         '''ANA LAYOUT İCİN WİDGET TANIMLARI'''
         self.lst_sys_splitter = QSplitter(Qt.Vertical)
@@ -1083,3 +1083,4 @@ if __name__ == '__main__':
     sw = MainGui()
     sw.show()
     _s.exit(sp.exec_())
+
