@@ -1,4 +1,4 @@
-'''7.0.2.2026-02:55:15'''
+'''7.0.2.2026-18:24:17'''
 
 import os
 
@@ -7,6 +7,7 @@ import artifical_intelligence as ai_side
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvasQT
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbarQT
 import matplotlib.pyplot as plt
@@ -141,10 +142,12 @@ class MainGui(QMainWindow):
         widget_main = QWidget()  # görsel girdi sistemi
         widget_second = QWidget()  # model bilgileri
         widget_finally = QWidget()  # model eğitimi
+        widget_google_drive = QWidget() # Bulut sistemi için
 
         layout_main = QHBoxLayout()
         layout_second = QHBoxLayout()
         layout_finally = QVBoxLayout()
+        layout_drive = QVBoxLayout()
         tab_layout = QVBoxLayout()
 
         horizontal_splitter_main = QSplitter(Qt.Horizontal)  # 3x main split side     #h3x-1
@@ -248,6 +251,15 @@ class MainGui(QMainWindow):
         self.model_techinc_informations = QTextEdit()
         self.model_techinc_informations.setReadOnly(True)
 
+        '''DRİVE TARAFİ'''
+
+        self.web_engine = QWebEngineView()
+        url = r'https://www.google.com/'
+        self.web_engine.setUrl(QUrl(url))
+
+        self.reset_web_engine = QPushButton('Web motorunu yeniden yükle')
+        self.define_url_web_enige = QPushButton('Web motoruna url tanımla')
+
         self.internal_gui_widgets = [[self.l1,
                                       self.define_internal_model_btn,
                                       self.inspect_internal_model_btn,
@@ -287,9 +299,14 @@ class MainGui(QMainWindow):
 
         layout_finally.addWidget(horizontal_splitter_main)
 
+        layout_drive.addWidget(self.web_engine)
+        layout_drive.addWidget(self.define_url_web_enige)
+        layout_drive.addWidget(self.reset_web_engine)
+
         widget_main.setLayout(layout_main)
         widget_second.setLayout(layout_second)
         widget_finally.setLayout(layout_finally)
+        widget_google_drive.setLayout(layout_drive)
         self.tabWidget.setLayout(tab_layout)
 
         self.vector = [
@@ -327,6 +344,7 @@ class MainGui(QMainWindow):
         self.tabWidget.addTab(widget_main, 'Sormak')
         self.tabWidget.addTab(widget_second, 'Grafikler')
         self.tabWidget.addTab(widget_finally, 'Model Eğitimi')
+        self.tabWidget.addTab(widget_google_drive, 'Bulut(Drive)')
 
         '''ANA LAYOUT İCİN WİDGET TANIMLARI'''
         self.lst_sys_splitter = QSplitter(Qt.Vertical)
@@ -444,6 +462,8 @@ class MainGui(QMainWindow):
         self.start_analysis.clicked.connect(self.analysisIgniter)
         self.clear_flowers_list.clicked.connect(self.reset_flowers_list)
         self.apply_target_path.clicked.connect(self.define_target_folder_path)
+        self.reset_web_engine.clicked.connect(self.reset_web_engine_fnc)
+        self.define_url_web_enige.clicked.connect(self.url_define_igniter)
 
         '''FUNCTION CALLS'''
         self.ignitPlotter(mode='test')
@@ -774,8 +794,8 @@ class MainGui(QMainWindow):
                     self.modelPredictionTableWidget.setItem(self.col, 0, item_raw_output)
                     self.modelPredictionTableWidget.setItem(self.col, 1, item_output)
                     self.modelPredictionTableWidget.setItem(self.col, 2, item_timecode)
-                    self.modelPredictionTableWidget.setItem(self.col, 3, item_curr_canvas)
-                    self.modelPredictionTableWidget.setItem(self.col, 4, item_curr_img_name)
+                    self.modelPredictionTableWidget.setItem(self.col, 4, item_curr_canvas)
+                    self.modelPredictionTableWidget.setItem(self.col, 3, item_curr_img_name)
                     print(f'prediction output: {self.prediction_output}')
 
                     self.col += 1
@@ -1016,6 +1036,47 @@ class MainGui(QMainWindow):
                 self.listWidgetExternal.setTextAlignment(Qt.AlignCenter)
                 self.external_model_file_system_model.addItem(self.listWidgetExternal)
 
+    def reset_web_engine_fnc(self):
+        urlx = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fdrive.google.com%2Fdrive%2F%3Fdmr%3D1%26ec%3Dwgc-drive-globalnav-goto&dsh=S486817294%3A1770473844500068&followup=https%3A%2F%2Fdrive.google.com%2Fdrive%2F%3Fdmr%3D1%26ec%3Dwgc-drive-globalnav-goto&ifkv=AXbMIuCR3heUMndR4Dlp54FcOo8v3_gDQLM-feX4eiyPwRliGLO29e4RL1kXk-KQEJ6WOZnkbGUpjQ&osid=1&passive=1209600&service=wise&flowName=GlifWebSignIn&flowEntry=ServiceLogin'
+        self.web_engine.reload()
+        self.web_engine.setUrl(QUrl(urlx))
+    
+    def quest_url_fnc(self):
+        dockwidget = QDockWidget(self)
+        dockwidgetmain = QWidget()
+        docklayout = QVBoxLayout()
+        dockwidget.setWidget(dockwidgetmain)
+        dockwidgetmain.setLayout(docklayout)
+
+        label = QLabel('Tanımlanacak Yeni Urlyi giriniz')
+        entry = QLineEdit()
+        entry.setPlaceholderText('Url girin....')
+        apply = QPushButton('Onayla')
+
+        docklayout.addWidget(label)
+        docklayout.addWidget(entry)
+        docklayout.addWidget(apply)
+
+
+        apply.clicked.connect(lambda : self.define_url_web_enige_fnc(entry.text()))
+
+        dockwidget.show()
+    
+    def define_url_web_enige_fnc(self,urlX):
+        if isinstance(urlX,str):
+            try:
+                self.web_engine.reload()
+                self.web_engine.setUrl(QUrl(urlX))
+
+                QMessageBox.information(self,'BASARİLİ','Url başarılı bir şekilde tanımlandı')
+            except Exception as e0x:
+                QMessageBox.critical(self,'Bilinmeyen hata: ' + str(e0x))
+        
+        else:
+            QMessageBox.critical(self,'BASARİSİZ','Url tanımlanamadı url geçersiz\nurl: ' + str(urlX))
+
+    def url_define_igniter(self):
+        self.quest_url_fnc()      
 
 if __name__ == '__main__':
     sp = QApplication(_s.argv)
