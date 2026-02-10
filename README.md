@@ -28,10 +28,9 @@
 <img width="503" height="469" alt="image" src="https://github.com/user-attachments/assets/bd17f139-0f28-4709-ab88-abd50642bb49" />
 
                           DETAYLI BILGILENDIRME BELGESI
+https://github.com/nazfelaksuresi8a4/Plant-disease-Project-Bitki-Hastal-Projesi-/blob/main/plant_disease_projesi_durum_raporu.pdf
 
-[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25222305/plant_disease_projesi_durum_raporu.pdf)
-
-
+[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25222452/plant_disease_projesi_durum_raporu.pdf)
 
 
                   **PROGRAM DİZİN YAPISI**
