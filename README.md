@@ -34,7 +34,8 @@
 
                           DETAYLI BILGILENDIRME BELGESI
 
-[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25116878/plant_disease_projesi_durum_raporu.pdf)
+[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25222305/plant_disease_projesi_durum_raporu.pdf)
+
 
 
 
