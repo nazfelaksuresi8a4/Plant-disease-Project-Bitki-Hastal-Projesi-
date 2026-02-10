@@ -1,4 +1,7 @@
-[plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25116876/plant_disease_projesi_durum_raporu.pdf)## LEAF SCANNER PROJESİ DETAYLARI
+[plant_disease_projesi_durum_raporu.pdf]([plant_disease_projesi_durum_raporu.pdf](https://github.com/user-attachments/files/25222305/plant_disease_projesi_durum_raporu.pdf)
+)## LEAF SCANNER PROJESİ DETAYLARI
+
+
 
 | Özellik                          | Açıklama |
 |----------------------------------|----------|
