@@ -1,5 +1,4 @@
 import cv2 as cv
-import skimage
 import numpy as np
 from tensorflow.keras.applications.resnet import preprocess_input
 
