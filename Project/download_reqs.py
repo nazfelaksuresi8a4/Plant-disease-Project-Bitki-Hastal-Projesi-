@@ -8,7 +8,7 @@ class installPythonPackages:
     
     def installPKGS(self):
         try:
-            self.proces_out = sbp.Popen(['pip'])
+            self.proces_out = sbp.Popen(['python' ,'-m' ,'pip' ,'install' ,'--upgrade' ,'pip'])
             self.state = 1
 
         except Exception as e0fx:
@@ -40,15 +40,6 @@ class installPythonPackages:
                                                                stderr=sbp.STDOUT,
                                                                text=True)
                     
-                    if self.proces_out is not None:
-                        if isinstance(self.proces_out,list):
-                            self.state = 1
-                        
-                        else:
-                            print('proces in not list')
-                    
-                    else:
-                        print('process is none')
             
             except Exception as e0fx1:
                 print('Modüller kurulamıyor lütfen daha sonra tekrar deneyiniz hata: ' + str(e0fx1))
