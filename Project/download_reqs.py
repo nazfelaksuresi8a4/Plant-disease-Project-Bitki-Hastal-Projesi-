@@ -35,7 +35,20 @@ class installPythonPackages:
                     
                 
                 else:
-                    print('python.exe -m pip command excepted falling down')
+                    self.proces_out = sbp.Popen(['python.exe','-m','pip','install','-r','reqs.txt'],
+                                                               stdout=sbp.PIPE,
+                                                               stderr=sbp.STDOUT,
+                                                               text=True)
+                    
+                    if self.proces_out is not None:
+                        if isinstance(self.proces_out,list):
+                            self.state = 1
+                        
+                        else:
+                            print('proces in not list')
+                    
+                    else:
+                        print('process is none')
             
             except Exception as e0fx1:
                 print('Modüller kurulamıyor lütfen daha sonra tekrar deneyiniz hata: ' + str(e0fx1))
