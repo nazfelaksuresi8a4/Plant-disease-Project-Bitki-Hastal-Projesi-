@@ -9,3 +9,6 @@ keras==3.13.0
 
 opencv-python
 scikit-image
+
+selenium
+requests
