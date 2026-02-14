@@ -1,9 +1,6 @@
-'''7.0.2.2026-18:24:17'''
-
-import os
+'''14.02.2026------20:22:19'''
 
 import artifical_intelligence
-import artifical_intelligence as ai_side
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -24,6 +21,45 @@ import datetime as dt
 import threading 
 import logPlotter
 import evaulateLogPlotter
+import DepolamaSistemleri.SOGD_FOLDER.SOGD as SOGD
+import DepolamaSistemleri.AGDS_FOLDER.AGDS as AGDS
+
+import os
+
+class ImageFlowSystemThreadSide(QObject):
+    status_signal = pyqtSignal(str)
+
+    def __init__(self,mode,user,rname,authtoken):
+        super().__init__()
+        self.modes = ['AGDS','SOGD']
+        self.state = 0
+
+        self.mode,self.user,self.rname,self.authToken = mode,user,rname,authtoken
+
+    def startFlow(self):
+        try:
+            if self.mode == 'AGDS':
+                statex = AGDS.AGDS(self.user,self.rname,self.authToken).AGDSX()
+                self.state = 1
+
+            elif self.mode == 'SOGD':
+                statex = SOGD.sogd(self.user,self.rname).SOGDX()
+                self.state = 1
+
+            else:
+                self.status_signal.emit(f'internal_error: Bilinmeyen mod tespit edildi\n\nmod: {self.mode}\n\nDesteklenen modlar: {self.modes}')
+                self.state = 0
+
+        except Exception as e0fx:
+            self.status_signal.emit(f'internal_error: {e0fx}')
+            self.state = 0
+            
+        if self.state == 1:
+            self.status_signal.emit(f'Durum: Görsel çekme işlemleri başarılı\n\nGörsellerin kaydedildiği yol: /DepolamaSistemleri\n\nEk detaylar\n\n{statex}')
+
+        elif self.state == 0:
+            self.status_signal.emit('Durum: Görse çekme işlemleri başarısız oldu')
+
 
 class PlotterThreadSide(QObject):
     returner_signal = pyqtSignal(int, int, dict, str, int)
@@ -70,7 +106,7 @@ class PlotterThreadSide(QObject):
             print(self.mode)
 
 
-class ThreadSide(QObject):
+class ThreadSide(QObject):  
     ifilesignal = pyqtSignal(str, int)
     efilesignal = pyqtSignal(str, int)
 
@@ -109,17 +145,24 @@ class MainGui(QMainWindow):
         self.plotter_classF = PlotterThreadSide(None,None)
         self.plotter_classF.moveToThread(self.plotter_threadF)
 
+        self.image_flow_thread = QThread(self)
+        self.image_flow_thread_class = ImageFlowSystemThreadSide('','','','')
+        self.image_flow_thread_class.moveToThread(self.image_flow_thread)
+
+
         '''SIGNALS'''
         self.ifilesignal = self.threadPool.ifilesignal
         self.efilesignal = self.threadPool.efilesignal
         self.returner_signal = self.plotter_classF.returner_signal
         self.returner_signal_e = self.plotter_classF.returner_signal_e
         self.renderer_signal = self.plotter_classF.renderer_signal
+        self.image_flow_thread_signal = self.image_flow_thread_class.status_signal
 
         '''ANA DEGİSKENLER'''
         self.curr_selected = []
         self.batch_arr = []
         self.curr_img_name = []
+        self.logs_array = []
 
         self.col = 0
         self.pred = str
@@ -143,11 +186,13 @@ class MainGui(QMainWindow):
         widget_second = QWidget()  # model bilgileri
         widget_finally = QWidget()  # model eğitimi
         widget_google_drive = QWidget() # Bulut sistemi için
+        widget_image_flow_system = QWidget()
 
         layout_main = QHBoxLayout()
         layout_second = QHBoxLayout()
         layout_finally = QVBoxLayout()
         layout_drive = QVBoxLayout()
+        layout_image_flow_system = QFormLayout()
         tab_layout = QVBoxLayout()
 
         horizontal_splitter_main = QSplitter(Qt.Horizontal)  # 3x main split side     #h3x-1
@@ -307,6 +352,8 @@ class MainGui(QMainWindow):
         widget_second.setLayout(layout_second)
         widget_finally.setLayout(layout_finally)
         widget_google_drive.setLayout(layout_drive)
+        widget_image_flow_system.setLayout(layout_image_flow_system)
+
         self.tabWidget.setLayout(tab_layout)
 
         self.vector = [
@@ -345,6 +392,7 @@ class MainGui(QMainWindow):
         self.tabWidget.addTab(widget_second, 'Grafikler')
         self.tabWidget.addTab(widget_finally, 'Model Eğitimi')
         self.tabWidget.addTab(widget_google_drive, 'Google')
+        self.tabWidget.addTab(widget_image_flow_system, 'Görsel Akış Sistemi(GAS 1.0)')
 
         '''ANA LAYOUT İCİN WİDGET TANIMLARI'''
         self.lst_sys_splitter = QSplitter(Qt.Vertical)
@@ -399,6 +447,27 @@ class MainGui(QMainWindow):
         self.show_current_model_datas_btn_Y = QPushButton('Mevcut değerleri göster')
         self.clear_current_model_data_graphs_Y = QPushButton('Monitörleri temizle-2')
 
+        self.start_image_flow_system_cbox = QComboBox()
+        self.start_image_flow_system_cbox.addItem('Akış modu: AGDS')
+        self.start_image_flow_system_cbox.addItem('Akış modu: SOGD')
+
+        self.start_image_flow_system_uname_ledit = QLineEdit()
+        self.start_image_flow_system_uname_ledit.setPlaceholderText('Kullanıcı adınızı girin....')
+
+        self.start_image_flow_system_rname_ledit = QLineEdit()
+        self.start_image_flow_system_rname_ledit.setPlaceholderText('Depo adınızı girin....')
+
+        self.start_image_flow_system_api_token_ledit = QLineEdit()
+        self.start_image_flow_system_api_token_ledit.setPlaceholderText('Github Api tokeninizi girin....')
+
+        self.image_flow_system_logs = QPlainTextEdit()
+        self.image_flow_system_logs.setReadOnly(True)
+        self.image_flow_system_logs.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.image_flow_system_logs.setPlaceholderText('*--Loglar burada gözükecektir--*')
+
+        self.start_image_flow_system_btn = QPushButton('Görsel akış sistemini başlat')
+        self.reset_image_flow_system_logs_btn = QPushButton('Görsel akış sistemi loglarını temizle')
+
         self.lst_sys_splitter.addWidget(self.clear_flowers_list)            
         self.lst_sys_splitter.addWidget(self.flowers_lst)
         self.lst_sys_splitter.addWidget(self.change_analysis_mode)
@@ -422,6 +491,15 @@ class MainGui(QMainWindow):
         layout_main.addWidget(self.lst_sys_splitter)
         layout_main.addWidget(self.display_sys_splitter)
         layout_main.addWidget(self.table_widget_splitter)
+
+        '''IFS TAB LAYOUT WIDGET APPENDS'''
+        layout_image_flow_system.addWidget(self.start_image_flow_system_cbox)
+        layout_image_flow_system.addWidget(self.start_image_flow_system_uname_ledit)
+        layout_image_flow_system.addWidget(self.start_image_flow_system_rname_ledit)
+        layout_image_flow_system.addWidget(self.image_flow_system_logs)
+        layout_image_flow_system.addWidget(self.start_image_flow_system_api_token_ledit)
+        layout_image_flow_system.addWidget(self.start_image_flow_system_btn)
+        layout_image_flow_system.addWidget(self.reset_image_flow_system_logs_btn)
 
         '''MODEL BİLGİLERİ(GRAFİKLERİ) WİDGETI İÇİN WİDGET TANIMLARI'''
         ce1,ce2 = QSplitter(Qt.Vertical),QSplitter(Qt.Vertical)
@@ -464,6 +542,12 @@ class MainGui(QMainWindow):
         self.apply_target_path.clicked.connect(self.define_target_folder_path)
         self.reset_web_engine.clicked.connect(self.reset_web_engine_fnc)
         self.define_url_web_enige.clicked.connect(self.url_define_igniter)
+        self.start_image_flow_system_btn.clicked.connect(lambda : self.ignitIFS(mode=self.start_image_flow_system_cbox.currentText().split(':')[1].strip(),
+                                                                                user=self.start_image_flow_system_uname_ledit.text(),
+                                                                                rname=self.start_image_flow_system_rname_ledit.text(),
+                                                                                aptoken=self.start_image_flow_system_api_token_ledit.text()))
+        self.reset_image_flow_system_logs_btn.clicked.connect(self.clear_flow_fsm_logs)
+
 
         '''FUNCTION CALLS'''
         self.ignitPlotter(mode='test')
@@ -478,6 +562,8 @@ class MainGui(QMainWindow):
         self.efilesignal.connect(self.addModelsWithList)
         self.returner_signal.connect(self.graphPlotter)
         self.returner_signal_e.connect(self.graphPlotterE)
+        self.image_flow_thread_signal.connect(self.flow_fsm)
+        self.image_flow_thread_signal.connect(self.renotify_func)
 
         self.setCentralWidget(self.tabWidget)
 
@@ -487,6 +573,29 @@ class MainGui(QMainWindow):
         qss_file.close()
 
     
+    def ignitIFS(self,mode,user,rname,aptoken):
+        self.image_flow_thread = QThread(self)
+        self.image_flow_thread_class = ImageFlowSystemThreadSide(mode,user,rname,aptoken)
+        self.image_flow_thread_class.moveToThread(self.image_flow_thread)
+        self.image_flow_thread_signal = self.image_flow_thread_class.status_signal
+
+        self.image_flow_thread_signal.connect(lambda : self.flow_fsm(mode,user,rname,aptoken))
+        self.image_flow_thread_signal.connect(self.renotify_func)
+
+        self.image_flow_thread.started.connect(self.image_flow_thread_class.startFlow)
+        self.image_flow_thread.start()
+
+    def flow_fsm(self,mode,user,rname,authkey):
+        self.logs_array.append(f'Kullanılan GAS: {mode} |||||| Sorgulanan Kullanıcı Adı: {user}\n\nSorgulanan Depo ismi: {rname}  ||||||  Github Token Anahtarı: {authkey}\n\n\n\n')
+        self.image_flow_system_logs.setPlainText(''.join(self.logs_array))
+
+    def clear_flow_fsm_logs(self):
+        self.logs_array.clear()
+        self.image_flow_system_logs.clear()
+
+    def renotify_func(self,state):
+        QMessageBox.information(self,'GAŞ 1.0',state)
+
     def graphPlotter(self,nrow,ncol,dct,key,mode):
         self.secondaxesobj[nrow,ncol].plot(dct[key],label=f'{key}')
         self.secondaxesobj[nrow,ncol].legend()
@@ -1083,4 +1192,3 @@ if __name__ == '__main__':
     sw = MainGui()
     sw.show()
     _s.exit(sp.exec_())
-
