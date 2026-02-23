@@ -1,5 +1,3 @@
-'''14.02.2026------20:22:19'''
-
 import artifical_intelligence
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
