@@ -5,10 +5,10 @@ from tensorflow.keras.models import Sequential,load_model
 from tensorflow.keras.layers import  Dense,Conv2D,MaxPooling2D
 from tensorflow.keras.preprocessing.image import  ImageDataGenerator
 from tensorflow.keras.preprocessing import  image
-from sklearn.preprocessing import  LabelEncoder
-from sklearn.model_selection import  train_test_split
 import image_processing
 import numpy as np
+
+print(tf.__version__)
 
 class ArtificalIntelligence:
     def __init__(self,epochs=None,
