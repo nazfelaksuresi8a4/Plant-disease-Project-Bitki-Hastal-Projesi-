@@ -1,3 +1,5 @@
+'''25.02.2026-00:47:27'''
+
 import cv2 as cv
 import numpy as np
 from tensorflow.keras.applications.resnet import preprocess_input
@@ -5,6 +7,8 @@ from tensorflow.keras.applications.resnet import preprocess_input
 class İmageProcesser:
     def __init__(self):
         self.status = True
+        self.current_matrix = None
+        self.flag_statement = True
 
     @staticmethod
     def to_matrix(img,mode):
@@ -35,3 +39,11 @@ class İmageProcesser:
             except Exception as e0:
                 print(e0)
                 return e0
+    
+    def realtimeImageCaptureSystem(self,callbackfunc):
+        capture = cv.VideoCapture(0)
+
+        while self.flag_statement:
+            ret,frame = capture.read()
+            frame = cv.cvtColor(frame,cv.COLOR_BGR2RGB)
+            callbackfunc(frame,None)
