@@ -1,3 +1,5 @@
+'''25.02.2026-00:46:09'''
+
 import artifical_intelligence
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -5,8 +7,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvasQT
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbarQT
+import pyqtgraph as pg
 import matplotlib.pyplot as plt
 import winsound as ws
+import cv2 as cv
 import sys as _s
 import asyncio
 from random import randint
@@ -23,6 +27,22 @@ import DepolamaSistemleri.SOGD_FOLDER.SOGD as SOGD
 import DepolamaSistemleri.AGDS_FOLDER.AGDS as AGDS
 
 import os
+
+current_matrix = None
+current_error = None
+byte_sequence_statement = 0x0f0
+
+def globalVariableReferanceFunction(cm,ce):
+    global current_error,current_matrix,byte_sequence_statement
+    current_matrix,current_error = cm,ce
+
+class imageCaptureSystem(QObject):
+    def __init__(self):
+        super().__init__()
+    
+    def captureSystem(self):
+        self.captureSYS = ip_side.İmageProcesser().realtimeImageCaptureSystem(globalVariableReferanceFunction) 
+
 
 class ImageFlowSystemThreadSide(QObject):
     status_signal = pyqtSignal(str)
@@ -147,6 +167,9 @@ class MainGui(QMainWindow):
         self.image_flow_thread_class = ImageFlowSystemThreadSide('','','','')
         self.image_flow_thread_class.moveToThread(self.image_flow_thread)
 
+        self.image_capture_system_thread = QThread(self)
+        self.image_capture_system_thread_cls = imageCaptureSystem()
+        self.image_capture_system_thread_cls.moveToThread(self.image_capture_system_thread)
 
         '''SIGNALS'''
         self.ifilesignal = self.threadPool.ifilesignal
@@ -185,6 +208,7 @@ class MainGui(QMainWindow):
         widget_finally = QWidget()  # model eğitimi
         widget_google_drive = QWidget() # Bulut sistemi için
         widget_image_flow_system = QWidget()
+        TakeAphoto_widget = QWidget()
 
         layout_main = QHBoxLayout()
         layout_second = QHBoxLayout()
@@ -192,6 +216,7 @@ class MainGui(QMainWindow):
         layout_drive = QVBoxLayout()
         layout_image_flow_system = QFormLayout()
         tab_layout = QVBoxLayout()
+        TakeAphoto_layout = QVBoxLayout()
 
         horizontal_splitter_main = QSplitter(Qt.Horizontal)  # 3x main split side     #h3x-1
 
@@ -351,6 +376,7 @@ class MainGui(QMainWindow):
         widget_finally.setLayout(layout_finally)
         widget_google_drive.setLayout(layout_drive)
         widget_image_flow_system.setLayout(layout_image_flow_system)
+        TakeAphoto_widget.setLayout(TakeAphoto_layout)
 
         self.tabWidget.setLayout(tab_layout)
 
@@ -369,7 +395,7 @@ class MainGui(QMainWindow):
         self.canvas_second = FigureCanvasQT(self.secondfigureobj)
         self.navbarY = NavigationToolbarQT(canvas=self.canvas_second)
 
-        '''GRAFİK GÖSTERİCİ MONİTÖRLER 1X2'''
+        '''GRAFİK GÖSTERİCİ MONİTÖRLER 3X1'''
         self.lastfigureobj, self.lastaxesobj = plt.subplots(3,1, figsize=(4, 4),facecolor='#52575c')
         self.canvas_last = FigureCanvasQT(self.lastfigureobj)
         self.navbarZ = NavigationToolbarQT(canvas=self.canvas_last)
@@ -377,6 +403,11 @@ class MainGui(QMainWindow):
         self.figureobj.set_facecolor('#52575c')
         self.secondfigureobj.set_facecolor('#52575c')
         self.lastfigureobj.set_facecolor('#52575c')
+
+        '''PYQTGRAPH-SIDE'''
+        self.plotwidget = pg.PlotWidget()
+        self.plotitem = self.plotwidget.plotItem
+        self.imageview = pg.ImageView()
 
         '''AXES OBJESİNİ ÖZELLESTİRMEK(GÖRSEL GÖSTERİCİ AXESLER)'''
         for axes in range(len(self.axesobj)):
@@ -390,6 +421,7 @@ class MainGui(QMainWindow):
         self.tabWidget.addTab(widget_second, 'Grafikler')
         self.tabWidget.addTab(widget_finally, 'Model Eğitimi')
         self.tabWidget.addTab(widget_google_drive, 'Google')
+        self.tabWidget.addTab(TakeAphoto_widget, 'Fotoğraf çek')
         self.tabWidget.addTab(widget_image_flow_system, 'Görsel Akış Sistemi(GAS 1.0)')
 
         '''ANA LAYOUT İCİN WİDGET TANIMLARI'''
@@ -517,6 +549,32 @@ class MainGui(QMainWindow):
         layout_second.addWidget(ce1)
         layout_second.addWidget(ce2)
 
+        '''PYQTGRAPH-WIDGET-SIDE'''
+        image_splt = QSplitter(Qt.Vertical)
+        graph_splt = QSplitter(Qt.Vertical)
+        btns_splt = QSplitter(Qt.Vertical)
+        splt_horiziontal = QSplitter(Qt.Horizontal)
+        splt_vertical = QSplitter(Qt.Vertical)
+
+        self.pbutton_start = QPushButton('BASLAT')
+        self.pbutton_save = QPushButton('KAYDET')
+        self.pbutton_stop = QPushButton('DURDUR')
+
+        splt_horiziontal.addWidget(image_splt)
+        splt_horiziontal.addWidget(graph_splt)
+
+        splt_vertical.addWidget(splt_horiziontal)
+        splt_vertical.addWidget(btns_splt)
+
+        TakeAphoto_layout.addWidget(splt_vertical)
+
+        image_splt.addWidget(self.imageview)
+        graph_splt.addWidget(self.plotwidget)
+
+        btns_splt.addWidget(self.pbutton_start)
+        btns_splt.addWidget(self.pbutton_save)
+        btns_splt.addWidget(self.pbutton_stop)
+
         '''SİGNAL-SLOT'''
         self.clear_canvas_btn.clicked.connect(self.clear_canvas)
         self.add_img_btn.clicked.connect(self.add_img_canvas)
@@ -545,7 +603,8 @@ class MainGui(QMainWindow):
                                                                                 rname=self.start_image_flow_system_rname_ledit.text(),
                                                                                 aptoken=self.start_image_flow_system_api_token_ledit.text()))
         self.reset_image_flow_system_logs_btn.clicked.connect(self.clear_flow_fsm_logs)
-
+        self.pbutton_start.clicked.connect(self.ignitCaptureSystem)
+        self.pbutton_stop.clicked.connect(self.stopMatrixCallback)
 
         '''FUNCTION CALLS'''
         self.ignitPlotter(mode='test')
@@ -569,8 +628,52 @@ class MainGui(QMainWindow):
         qss_file = open('program_css.qss',mode='r')
         self.setStyleSheet(qss_file.read())
         qss_file.close()
-
     
+    def ignitCaptureSystem(self):
+        self.image_capture_system_thread = QThread(self)
+        self.image_capture_system_thread_cls = imageCaptureSystem()
+        self.image_capture_system_thread_cls.moveToThread(self.image_capture_system_thread)
+
+        self.image_capture_system_thread.started.connect(self.image_capture_system_thread_cls.captureSystem)
+        self.image_capture_system_thread.start()
+        
+        self.captureRenderTimer = QTimer(self)
+        self.captureRenderTimer.timeout.connect(self.matrixCallback)
+        self.captureRenderTimer.start(45)
+
+    def matrixCallback(self):
+        self.pbutton_start.setEnabled(False)
+        if current_matrix is not None:
+            if isinstance(current_matrix,np.ndarray):
+                if len(current_matrix) > 0:
+                    spaces = {
+                        'r': cv.calcHist(current_matrix,[0],None,[255],[0,255]),
+                        'g': cv.calcHist(current_matrix,[1],None,[255],[0,255]),
+                        'b': cv.calcHist(current_matrix,[2],None,[255],[0,255]),
+                    }
+
+                    self.imageview.setImage(current_matrix.transpose(1,0,2))
+
+                    self.plotitem.clear()
+                    self.plotitem.plot(spaces['r'].flatten(),pen='r')
+                    self.plotitem.plot(spaces['g'].flatten(),pen='g')
+                    self.plotitem.plot(spaces['b'].flatten(),pen='b')
+
+                else:
+                    print(current_matrix,2)
+
+            else:
+                print(current_matrix,1)
+        
+        else:
+            print(current_matrix,0)     
+
+    def stopMatrixCallback(self):
+        self.pbutton_start.setEnabled(True)
+        self.image_processer.flag_statement = False
+        self.captureRenderTimer.stop()
+
+
     def ignitIFS(self,mode,user,rname,aptoken):
         self.image_flow_thread = QThread(self)
         self.image_flow_thread_class = ImageFlowSystemThreadSide(mode,user,rname,aptoken)
