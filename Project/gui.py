@@ -634,31 +634,35 @@ class MainGui(QMainWindow):
         if current_matrix is not None:
             captured_matrix = current_matrix
 
-            dockwidget = QDockWidget()
-            xwidget = QWidget()
-            xlayout = QVBoxLayout()
-            xwidget.setLayout(xlayout)
+            self.dockwidget = QDockWidget()
+            self.xwidget = QWidget()
+            self.xlayout = QVBoxLayout()
+            self.xwidget.setLayout(self.xlayout)
 
             short_memory_imageview = pg.ImageView()
             short_memory_imageview.setImage(captured_matrix.transpose(1,0,2))
 
-            titleheader = QLabel('Yakalanan Görsel')
-            savebtn = QPushButton('Kaydet')
-            xfilename = QLineEdit()
-            xfilename.setPlaceholderText('Görselinze isim verin......')
+            self.titleheader = QLabel('Yakalanan Görsel')
+            self.savebtn = QPushButton('Kaydet')
+            self.xfilename = QLineEdit()
+            self.xfilename.setPlaceholderText('Görselinze isim verin......')
 
-            xlayout.addWidget(titleheader)
-            xlayout.addWidget(short_memory_imageview)
-            xlayout.addWidget(xfilename)
-            xlayout.addWidget(savebtn)
+            self.xlayout.addWidget(self.titleheader)
+            self.xlayout.addWidget(short_memory_imageview)
+            self.xlayout.addWidget(self.xfilename)
+            self.xlayout.addWidget(self.savebtn)
 
-            savebtn.clicked.connect(lambda : cv.imwrite(xfilename.text(),cv.cvtColor(captured_matrix,cv.COLOR_BGR2RGB)))
-            savebtn.clicked.connect(lambda : QMessageBox.information(self,'Görsel kaydedildi!',f'Görsel ismi: {xfilename.text()}'))
-            savebtn.clicked.connect(lambda : dockwidget.close())
+            self.savebtn.clicked.connect(lambda : cv.imwrite('SavedImages/' + self.xfilename.text(),cv.cvtColor(captured_matrix,cv.COLOR_BGR2RGB)))
+            self.savebtn.clicked.connect(lambda : QMessageBox.information(self,'Görsel kaydedildi!',f'Görsel ismi: {self.xfilename.text()}\nGörsel yolu:SavedImages/{self.xfilename.text()}'))
+            self.savebtn.clicked.connect(lambda : self.dockwidget.close())
 
-            dockwidget.setWidget(xwidget)
+            self.dockwidget.setWidget(self.xwidget)
 
-            dockwidget.show()
+            qss_file = open('program_css.qss',mode='r')
+            self.dockwidget.setStyleSheet(qss_file.read())
+            qss_file.close()
+
+            self.dockwidget.show()
 
     def ignitCaptureSystem(self):
         self.image_capture_system_thread = QThread(self)
