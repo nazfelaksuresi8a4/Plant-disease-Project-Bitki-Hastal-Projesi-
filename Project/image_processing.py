@@ -45,5 +45,6 @@ class İmageProcesser:
 
         while self.flag_statement:
             ret,frame = capture.read()
-            frame = cv.cvtColor(frame,cv.COLOR_BGR2RGB)
-            callbackfunc(frame,None)
+            frameX = cv.cvtColor(frame,cv.COLOR_BGR2RGB)
+            callbackfunc(frameX,None)
+
