@@ -1,4 +1,4 @@
-'''25.02.2026-00:46:09'''
+'''25.02.2026-14:37:40'''
 
 import artifical_intelligence
 from PyQt5.QtCore import *
@@ -17,7 +17,7 @@ from random import randint
 import numpy as np
 
 import file_actions
-import image_processing as ip_side
+import image_processing_side.image_processing as ip_side
 import file_actions as tdg
 import datetime as dt
 import threading 
@@ -605,6 +605,7 @@ class MainGui(QMainWindow):
         self.reset_image_flow_system_logs_btn.clicked.connect(self.clear_flow_fsm_logs)
         self.pbutton_start.clicked.connect(self.ignitCaptureSystem)
         self.pbutton_stop.clicked.connect(self.stopMatrixCallback)
+        self.pbutton_save.clicked.connect(self.savePhotoFunction)
 
         '''FUNCTION CALLS'''
         self.ignitPlotter(mode='test')
@@ -629,6 +630,36 @@ class MainGui(QMainWindow):
         self.setStyleSheet(qss_file.read())
         qss_file.close()
     
+    def savePhotoFunction(self):
+        if current_matrix is not None:
+            captured_matrix = current_matrix
+
+            dockwidget = QDockWidget()
+            xwidget = QWidget()
+            xlayout = QVBoxLayout()
+            xwidget.setLayout(xlayout)
+
+            short_memory_imageview = pg.ImageView()
+            short_memory_imageview.setImage(captured_matrix.transpose(1,0,2))
+
+            titleheader = QLabel('Yakalanan Görsel')
+            savebtn = QPushButton('Kaydet')
+            xfilename = QLineEdit()
+            xfilename.setPlaceholderText('Görselinze isim verin......')
+
+            xlayout.addWidget(titleheader)
+            xlayout.addWidget(short_memory_imageview)
+            xlayout.addWidget(xfilename)
+            xlayout.addWidget(savebtn)
+
+            savebtn.clicked.connect(lambda : cv.imwrite(xfilename.text(),cv.cvtColor(captured_matrix,cv.COLOR_BGR2RGB)))
+            savebtn.clicked.connect(lambda : QMessageBox.information(self,'Görsel kaydedildi!',f'Görsel ismi: {xfilename.text()}'))
+            savebtn.clicked.connect(lambda : dockwidget.close())
+
+            dockwidget.setWidget(xwidget)
+
+            dockwidget.show()
+
     def ignitCaptureSystem(self):
         self.image_capture_system_thread = QThread(self)
         self.image_capture_system_thread_cls = imageCaptureSystem()
@@ -1007,6 +1038,7 @@ class MainGui(QMainWindow):
                     self.modelPredictionTableWidget.setItem(self.col, 4, item_curr_canvas)
                     self.modelPredictionTableWidget.setItem(self.col, 3, item_curr_img_name)
                     print(f'prediction output: {self.prediction_output}')
+                    print(self.pred)
 
                     self.col += 1
                 else:
