@@ -5,7 +5,7 @@ from tensorflow.keras.models import Sequential,load_model
 from tensorflow.keras.layers import  Dense,Conv2D,MaxPooling2D
 from tensorflow.keras.preprocessing.image import  ImageDataGenerator
 from tensorflow.keras.preprocessing import  image
-import image_processing
+import image_processing_side.image_processing as image_processing
 import numpy as np
 
 print(tf.__version__)
@@ -90,3 +90,4 @@ class ArtificalIntelligence:
                     except Exception as e:
                         print(e)
                         return e
+
