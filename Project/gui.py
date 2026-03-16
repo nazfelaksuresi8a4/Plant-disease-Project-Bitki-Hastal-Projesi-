@@ -1283,7 +1283,7 @@ class MainGui(QMainWindow):
                 self.external_model_file_system_model.addItem(self.listWidgetExternal)
 
     def reset_web_engine_fnc(self):
-        urlx = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fdrive.google.com%2Fdrive%2F%3Fdmr%3D1%26ec%3Dwgc-drive-globalnav-goto&dsh=S486817294%3A1770473844500068&followup=https%3A%2F%2Fdrive.google.com%2Fdrive%2F%3Fdmr%3D1%26ec%3Dwgc-drive-globalnav-goto&ifkv=AXbMIuCR3heUMndR4Dlp54FcOo8v3_gDQLM-feX4eiyPwRliGLO29e4RL1kXk-KQEJ6WOZnkbGUpjQ&osid=1&passive=1209600&service=wise&flowName=GlifWebSignIn&flowEntry=ServiceLogin'
+        urlx = 'https://google.com'
         self.web_engine.reload()
         self.web_engine.setUrl(QUrl(urlx))
     
