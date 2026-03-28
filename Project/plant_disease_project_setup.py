@@ -63,13 +63,6 @@ class DownloadPythonThread(QObject):
                 flag = False
                 print(self.python_installer_module)
                 print('completed')
-                
-                try:
-                    import subprocess as sbp
-                    sbp.Popen(['python','gui.py'])
-                
-                except Exception as e0fxl:
-                    print(e0fxl)
 
                 self.dpt_signal.emit(1,'x')
             
@@ -107,14 +100,17 @@ class mainWindow(QMainWindow):
         self.text_edit.setAlignment(Qt.AlignCenter)
 
         self.mainbtnx = QPushButton("Setup'ı başlat")
+        self.startprogramx = QPushButton('Programı başlat')
 
         '''PARENTS'''
         self.main_layout.addWidget(self.main_label)
         self.main_layout.addWidget(self.text_edit)
         self.main_layout.addWidget(self.mainbtnx)
+        self.main_layout.addWidget(self.startprogramx)
 
         '''SIGNALS'''
         self.mainbtnx.clicked.connect(self.installPythonIgniter)
+        self.startprogramx.clicked.connect(self.start_program_function)
 
         '''MAIN-WIDGET'''
         self.setCentralWidget(self.main_widget)
@@ -160,7 +156,7 @@ class mainWindow(QMainWindow):
         if state == 1:
             self.reqs_installer_thread_class = DownloadReqsThread()
             self.reqs_installer_thread = QThread(self)
-            self.reqs_installer_thread_class.moveToThread(self.python_installer_thread)
+            self.reqs_installer_thread_class.moveToThread(self.reqs_installer_thread)
             self.drt_signal = self.reqs_installer_thread_class.drt_signal
             self.drt_signal.connect(self.ip2i_receiver)
             
@@ -178,6 +174,14 @@ class mainWindow(QMainWindow):
         else:
             if state == 0:
                 print(0,outs)
+
+    def start_program_function(self):
+        try:
+            import subprocess as sbp
+            sbp.Popen(['python','gui.py'])
+                
+        except Exception as e0fxl:
+            print(e0fxl)
 
 if __name__ == "__main__":
     sp = QApplication(_s.argv)
