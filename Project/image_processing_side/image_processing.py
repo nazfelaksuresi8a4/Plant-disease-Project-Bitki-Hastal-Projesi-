@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
-from tensorflow.keras.applications.resnet import preprocess_input
-
+from tensorflow.keras.applications.resnet import preprocess_input as preprocess_input_RNET
+from tensorflow.keras.applications.efficientnet import preprocess_input as preprocess_input_EFCNET
 class İmageProcesser:
     def __init__(self):
         self.status = True
@@ -10,16 +10,32 @@ class İmageProcesser:
 
     @staticmethod
     def to_matrix(img,mode):
-        if mode == 'prediction':
+        if mode == 'prediction-resnet50':
             try:
                 print(img)
                 if isinstance(img, str):
                     preprocessed_img = np.expand_dims(cv.resize(cv.cvtColor(cv.imread(img), cv.COLOR_BGR2RGB), dsize=(224, 224)),axis=0)
-                    preprocessed_img = preprocess_input(preprocessed_img)
+                    preprocessed_img = preprocess_input_RNET(preprocessed_img)
                     return preprocessed_img
                 else:
                     preprocessed_img = np.expand_dims(cv.resize(cv.cvtColor(img, cv.COLOR_BGR2RGB), dsize=(224, 224)),axis=0)
-                    preprocessed_img = preprocess_input(preprocessed_img)
+                    preprocessed_img = preprocess_input_RNET(preprocessed_img)
+                    return preprocessed_img
+
+            except Exception as e0:
+                print(e0)
+                return e0
+        
+        elif mode == 'prediction-efficientnetb0':
+            try:
+                print(img)
+                if isinstance(img, str):
+                    preprocessed_img = np.expand_dims(cv.resize(cv.cvtColor(cv.imread(img), cv.COLOR_BGR2RGB), dsize=(224, 224)),axis=0)
+                    preprocessed_img = preprocess_input_EFCNET(preprocessed_img)
+                    return preprocessed_img
+                else:
+                    preprocessed_img = np.expand_dims(cv.resize(cv.cvtColor(img, cv.COLOR_BGR2RGB), dsize=(224, 224)),axis=0)
+                    preprocessed_img = preprocess_input_EFCNET(preprocessed_img)
                     return preprocessed_img
 
             except Exception as e0:
