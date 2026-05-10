@@ -1,5 +1,3 @@
-'''25.02.2026-14:37:40'''
-
 import artifical_intelligence
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -133,14 +131,16 @@ class ThreadSide(QObject):
         self.internal_fs, self.external_fs = internals, externals
 
     async def emitInternals(self):
-        for internal_file in self.internal_fs:
-            # if isinstance(internal_file,str) and internal_file.endswith('.h5'):
-            self.ifilesignal.emit(internal_file, 0)
+        if self.internal_fs is not None:
+            for internal_file in self.internal_fs:
+                # if isinstance(internal_file,str) and internal_file.endswith('.h5'):
+                self.ifilesignal.emit(internal_file, 0)
 
     async def emitExternals(self):
-        for external_file in self.external_fs:
-            # if isinstance(external_file,str) and external_file.endswith('.h5'):
-            self.efilesignal.emit(external_file, 1)
+        if self.external_fs is not None:
+            for external_file in self.external_fs:
+                # if isinstance(external_file,str) and external_file.endswith('.h5'):
+                self.efilesignal.emit(external_file, 1)
 
     async def igniter(self):
         await asyncio.gather(self.emitInternals(), self.emitExternals())
@@ -241,14 +241,13 @@ class MainGui(QMainWindow):
 
         '''ETİKETLER'''
         self.l1, self.l2, self.l3 = QLabel(text='Dahili Model Seçme Sistemi'), QLabel(
-            text='Model Eğitim Penceresi'), QLabel(text='Harici Model Seçme Sistemi')
+            text='Model Eğitim Penceresi'), QLabel(text='Sınıflandırma ve Karar modelleri seçme sistetmi')
         self.internal_model_selecet_label = QLabel(text='Dahili Model seçme Sistemi Ayarı')
-        self.external_model_select_label = QLabel(text='Harici Model Seçme Sistemi Ayarı')
+        self.external_model_select_label = QLabel(text='Sınıflandırma ve Karar modelleri Seçme Sistemi Ayarı')
         self.model_inspecting_monitor_label = QLabel(text='Model İnceleme Monitörü')
         self.model_inspect_preview_label = QLabel(
             text='Model adı: Bilinmiyor\nModel yolu: Bilinmiyor\nModel türü: Bilinmiyor')
         self.model_techinc_informations_label = QLabel(text='Modelin Teknik Detayları')
-        self.file_sys_external_path_label = QLabel(text='Harici Dosya Sistemi Yolu')
         self.file_sys_internal_path_label = QLabel(text='Dahili Dosya Sistemi Yolu')
 
         self.l1.setAlignment(Qt.AlignCenter)
@@ -260,22 +259,20 @@ class MainGui(QMainWindow):
         self.model_inspecting_monitor_label.setAlignment(Qt.AlignCenter)
         self.model_inspect_preview_label.setAlignment(Qt.AlignCenter)
         self.model_techinc_informations_label.setAlignment(Qt.AlignCenter)
-        self.file_sys_external_path_label.setAlignment(Qt.AlignCenter)
         self.file_sys_internal_path_label.setAlignment(Qt.AlignCenter)
 
         '''BUTONLAR'''
         self.define_internal_model_btn = QPushButton(text='Dahili modeli tanımla')
         self.inspect_internal_model_btn = QPushButton(text='Dahili modeli incele')
 
-        self.define_external_model_btn = QPushButton(text='Harici modeli tanımla')
-        self.inspect_external_model_btn = QPushButton(text='Harici modeli incele')
+        self.define_external_model_btn = QPushButton(text='Modeli tanımla')
+        self.inspect_external_model_btn = QPushButton(text='Modeli incele')
         self.define_external_file_system_path = QPushButton(text='Dosya sistemi yolunu tanımla')
 
         self.define_all_models_btn = QPushButton(text='Modelleri tanımla')
         self.clear_all_models_btn = QPushButton(text='Model listesini temizle')
 
         self.reset_internal_path = QPushButton('Dahili Yolu Sıfırla')
-        self.reset_external_path = QPushButton('Harici Yolu Sıfırla')
 
         self.clear_flowers_list = QPushButton('Cicek listesini temizle')
 
@@ -291,7 +288,6 @@ class MainGui(QMainWindow):
         self.modelPredictionTableWidget.setMaximumWidth((self.width() // 2))
         self.modelPredictionTableWidget.setHorizontalHeaderLabels(['Model tahmini', 'Tahmin', 'Zaman kodu','Mevcut kanvas','Görsel ismi'])
 
-        self.enter_external_path = QLineEdit()
         self.enter_internal_path = QLineEdit()
 
         self.target_folder_path = QLineEdit()
@@ -299,16 +295,14 @@ class MainGui(QMainWindow):
 
         self.apply_target_path = QPushButton('Hedef klasörü tanımla')
 
-        self.enter_external_path.setPlaceholderText('Harici Modelin Yolunu Girin...')
         self.enter_internal_path.setPlaceholderText('Dahili Modelin Yolunu girin....')
-        self.enter_external_path.setText('models/ProgramInterfaceModelsExternal')
         self.enter_internal_path.setText('models/ProgramInterfaceModelsInternal')
 
         self.change_analysis_mode = QComboBox()
         self.change_model_type = QComboBox()
         self.change_batch_size = QComboBox()
 
-        itemsX, itemsY = ['Hasta-Saglikli-Tespiti', 'Hastalik-Tespiti'], ['Harici', 'Dahili']
+        itemsX, itemsY = ['Hasta-Saglikli-Tespiti', 'Hastalik-Tespiti'], ['Dahili', 'Dahili']       #dahili - harici olmalı
         for itemX, itemY in zip(itemsX, itemsY):
             self.change_analysis_mode.addItem(itemX)
             self.change_model_type.addItem(itemY)
@@ -341,14 +335,7 @@ class MainGui(QMainWindow):
                                       self.define_all_models_btn,
                                       self.clear_all_models_btn,
                                       ],
-                                     [self.l3,
-                                      self.define_external_model_btn,
-                                      self.inspect_external_model_btn,
-                                      self.external_model_file_system_model]]
-
-        vertical_splt_sec_v4x1_1_vertical_splitter_1.addWidget(self.external_model_select_label)
-        vertical_splt_sec_v4x1_1_vertical_splitter_1.addWidget(self.enter_external_path)
-        vertical_splt_sec_v4x1_1_vertical_splitter_1.addWidget(self.reset_external_path)
+                                     []]
 
         vertical_splt_sec_v4x1_1_vertical_splitter_2.addWidget(self.internal_model_selecet_label)
         vertical_splt_sec_v4x1_1_vertical_splitter_2.addWidget(self.enter_internal_path)
@@ -424,7 +411,7 @@ class MainGui(QMainWindow):
         self.tabWidget.addTab(TakeAphoto_widget, 'Fotoğraf çek')
         self.tabWidget.addTab(widget_image_flow_system, 'Görsel Akış Sistemi(GAS 1.0)')
 
-        '''ANA LAYOUT İCİN WİDGET TANIMLARI'''
+        '''ANA LAYOUT İCİN WİDGET TANIMLARI'''  
         self.lst_sys_splitter = QSplitter(Qt.Vertical)
         self.display_sys_splitter = QSplitter(Qt.Vertical)
 
@@ -501,7 +488,7 @@ class MainGui(QMainWindow):
         self.lst_sys_splitter.addWidget(self.clear_flowers_list)            
         self.lst_sys_splitter.addWidget(self.flowers_lst)
         self.lst_sys_splitter.addWidget(self.change_analysis_mode)
-        self.lst_sys_splitter.addWidget(self.change_model_type)
+        #self.lst_sys_splitter.addWidget(self.change_model_type)
         self.lst_sys_splitter.addWidget(self.change_batch_size)
         self.lst_sys_splitter.addWidget(self.start_analysis)
 
@@ -580,7 +567,6 @@ class MainGui(QMainWindow):
         self.add_img_btn.clicked.connect(self.add_img_canvas)
         self.add_img_lst_btn.clicked.connect(self.add_lst_img)
         self.define_internal_model_btn.clicked.connect(self.define_internal_model)
-        self.define_external_model_btn.clicked.connect(self.define_external_model)
         self.inspect_internal_model_btn.clicked.connect(lambda: self.inspectModel(self.IPath, self.IName, self.IType))
         self.inspect_external_model_btn.clicked.connect(lambda: self.inspectModel(self.EPath, self.EName, self.EType))
         self.get_current_model_datas_btn_X.clicked.connect(lambda: self.ignitPlotter('logPlotter',0))
@@ -592,7 +578,6 @@ class MainGui(QMainWindow):
         self.define_all_models_btn.clicked.connect(self.addModels)
         self.clear_all_models_btn.clicked.connect(self.clearModels)
         self.reset_internal_path.clicked.connect(self.resetIPath)
-        self.reset_external_path.clicked.connect(self.resetEPath)
         self.start_analysis.clicked.connect(self.analysisIgniter)
         self.clear_flowers_list.clicked.connect(self.reset_flowers_list)
         self.apply_target_path.clicked.connect(self.define_target_folder_path)
@@ -973,13 +958,14 @@ class MainGui(QMainWindow):
         date, time = str(dt.datetime.now().date()), str(dt.datetime.now().strftime('%H:%M:%S'))
         self.prediction = None
         self.mtypeX = mtypeX
+        self.prediction_output = None
 
         self.artificalIntelligenceModule = artifical_intelligence.ArtificalIntelligence()
         self.internal_selected_model, self.external_selected_model = self.IPath, self.EPath
         print(self.IPath,self.EPath)
 
         if mtypeX == 'internal':
-            self.internal_selected_model, self.external_selected_model = self.internal_selected_model.split(':')[1].strip()
+            self.internal_selected_model, self.external_selected_model = self.internal_selected_model.split(':')[1].strip(),None
 
         elif mtypeX == 'external':
             self.internal_selected_model, self.external_selected_model = None, self.external_selected_model.split(':')[1].strip()
@@ -993,13 +979,6 @@ class MainGui(QMainWindow):
                     matlike=curr_matrix,
                     batch_size=self.batchX,
                     mode=self.modeX)
-            
-            elif self.external_selected_model is not None:
-                self.prediction_output = self.artificalIntelligenceModule.predictModel(
-                    model=self.internal_selected_model.split(';')[1].strip(),
-                    matlike=curr_matrix,
-                    batch_size=batchX,
-                    mode=modeX)
 
 
             if self.prediction_output is not None:
@@ -1007,7 +986,7 @@ class MainGui(QMainWindow):
                 if self.col >= 100:
                     self.modelPredictionTableWidget.setRowCount(self.col + 1)
 
-                if isinstance(self.prediction_output, np.ndarray):
+                if True:
                     item_raw_output = QTableWidgetItem(str(np.max(self.prediction_output[0])))
                     item_output = None
                     item_timecode = QTableWidgetItem(f'{date}--{time}')
@@ -1024,13 +1003,32 @@ class MainGui(QMainWindow):
                                 self.pred = 'Bitki hasta'
                     
                     elif self.change_analysis_mode.currentText().strip() == 'Hastalik-Tespiti':
-                        if len(self.prediction_output[0]) == 4:
-                            self.softmax_labels_dictionary = {0: 'domates bakteri lekesi',
-                                                              1: 'Domates Erken yanıklık', 
-                                                              2: 'Domates Geç yanıklığı',
-                                                              3: 'Domates Septoria yaprak lekeleri'}
+                        try:
+                            if len(self.prediction_output[0][0]) == 4 and self.prediction_output[1] == 'model_1':
+                                self.softmax_labels_dictionary_0 = {0: 'domates bakteri lekesi',
+                                                                1: 'Bunu bilemedim lütfen diğer model ile deneyin',  #Domates Erken yanıklık 
+                                                                2: 'Bunu bilemedim lütfen diğer model ile deneyin',   #Domatges geç yanıklık
+                                                                3: 'Domates Septoria yaprak lekeleri'}
+                                print('model_1')
+                                self.pred = self.softmax_labels_dictionary_0[np.argmax(self.prediction_output[0])]
+                            
 
-                            self.pred = self.softmax_labels_dictionary[np.argmax(self.prediction_output[0])]
+                                print(f'prediction output: {self.prediction_output}')
+                                print(self.pred)
+
+                                self.col += 1
+                            
+                            elif len(self.prediction_output[0][0]) == 4 and self.prediction_output[1] == 'model_2':
+                                self.softmax_labels_dictionary_1 = {0: 'Domates Erken Yanıklık',
+                                                                1: 'Domates Geç Yanıklık', 
+                                                                2: 'Tomato Leaf Mold',
+                                                                3: 'Tomato Yellow Curl Leaf Virus'}
+                                print('model_2')
+
+                                self.pred = self.softmax_labels_dictionary_1[np.argmax(self.prediction_output[0])]
+                        except Exception as model_exception_e0fx:
+                            print(self.prediction_outpu,model_exception_e0fx)
+                        
 
                     item_output = QTableWidgetItem(self.pred)
                     item_curr_canvas = QTableWidgetItem(str(str(self.curr_img_name).split('\n')[1].split(';')[1]))
@@ -1044,12 +1042,10 @@ class MainGui(QMainWindow):
                     print(f'prediction output: {self.prediction_output}')
                     print(self.pred)
 
-                    self.col += 1
-                else:
-                    print(type(self.prediction_output), type(self.prediction_output[0][0]))
 
-            else:
-                print(f'prediction failed, prediction output: {self.prediction_output}')
+                    self.col += 1
+
+            
 
     def clear_table_widget(self):
         self.col = 0
@@ -1103,22 +1099,7 @@ class MainGui(QMainWindow):
             pass
 
     def define_external_model(self):
-        self.curr_selected = self.external_model_file_system_model.selectedItems()
-
-        if len(self.curr_selected) >= 1:
-            mtype, mname, mpath = self.curr_selected[len(self.curr_selected) - 1].text().split('\n')
-            if mtype.split(';')[1] == ' Dahili':
-                self.IType, self.IName, self.IPath = mtype, mname, mpath
-            elif mtype.split(';')[1] == ' Harici':
-                self.EType, self.EName, self.EPath = mtype, mname, mpath
-            else:
-                print(mtype.split(';')[1])
-
-            self.model_inspect_preview_label.setText(f'{mname}\n{mpath}\n{mtype}')
-            self.file_sys_external_path_label.setText(f'Dahili model dosya sistemi yolu: {mpath}')
-
-        else:
-            pass
+        self.EPath
 
     def reset_flowers_list(self):
         item = QListWidgetItem(str('**----LISTEYE EKLENEN GORSELLER BURADA GOZUKUR----**'))
@@ -1241,21 +1222,21 @@ class MainGui(QMainWindow):
 
     def addModels(self):
         try:
-            self.ipath, self.epath = self.enter_internal_path.text(), self.enter_external_path.text()
+            self.ipath = self.enter_internal_path.text()
 
-            fileClass = file_actions.FileActions('artifical_intelligence', self.ipath, self.epath)
-            internal_models, external_models = fileClass.fileAction()
+            fileClass = file_actions.FileActions('artifical_intelligence', self.ipath)
+            internal_models = fileClass.fileAction()
 
-            if isinstance(internal_models, list) and isinstance(external_models, list):
-                if len(internal_models) >= 1 and len(external_models) >= 1:
+            if isinstance(internal_models, list):
+                if len(internal_models) >= 1:
                     internal_models = [f'Model türü; Dahili\nModel ismi; {x}\nModel yolu; {self.ipath}\{x}' for x in
                                        internal_models]
-                    external_models = [f'Model türü; Harici\nModel ismi; {x}\nModel yolu; {self.epath}\{x}' for x in
-                                       external_models]
+            
+            
 
-            self.threadIgniter(internal_models, external_models)
-        except:
-            pass
+            self.threadIgniter(internal_models,None)
+        except Exception as e01fx:
+            print(e01fx)
 
     def clearModels(self):
         self.internal_model_file_system_model.clear()
@@ -1268,12 +1249,33 @@ class MainGui(QMainWindow):
         self.file = file
         self.flag = flag
 
+        self.defined_models = [r'models\SigmoidModel\model\SigmoidClassificationModel.h5',
+                               r'models\SoftmaxModel_1\model\SoftmaxClassificationModel.h5',
+                               r'models\SoftmaxModel_2\model\PlantDiseaseClassifier_2.h5']
+        
+
+        self.internal_model_file_system_model.setIconSize(QSize(64,64))
+        
+        self.defined_icon = QIcon('icons/defined.png')
+        self.undefined_icon = QIcon('icons/undefined.png')
+        self.undefined_ai_icon = QIcon('icons/ai_icon.png')
+
         if self.flag == 0:
             if isinstance(self.file, str):
                 self.IType, self.IName, self.IPath = self.file.split('\n')
                 self.listWidgetItemInternal = QListWidgetItem(f'{self.IType}\n{self.IName}\n{self.IPath}')
+                
+                if self.IPath.split(';')[1].strip() in self.defined_models:
+                    self.listWidgetItemInternal.setIcon(self.defined_icon)
+                else:
+                    if self.IPath.split(';')[1].strip().endswith('.h5'):
+                        self.listWidgetItemInternal.setIcon(self.undefined_ai_icon)
+                    else:
+                        self.listWidgetItemInternal.setIcon(self.undefined_icon)
+
                 self.listWidgetItemInternal.setTextAlignment(Qt.AlignCenter)
                 self.internal_model_file_system_model.addItem(self.listWidgetItemInternal)
+                print('hahahaha')
 
         if self.flag == 1:
             if isinstance(self.file, str):
