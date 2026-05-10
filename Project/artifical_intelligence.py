@@ -1,5 +1,3 @@
-'''7.02.2026-02:56:20'''
-
 import tensorflow as tf
 from tensorflow.keras.models import Sequential,load_model
 from tensorflow.keras.layers import  Dense,Conv2D,MaxPooling2D
@@ -66,7 +64,7 @@ class ArtificalIntelligence:
 
                 if matlike is not None:
                     try:
-                        image_matrix = image_processing.İmageProcesser().to_matrix(matlike,mode='prediction')
+                        image_matrix = image_processing.İmageProcesser().to_matrix(matlike,mode='prediction-resnet50')
                         predict_output = artifical_intelligence_model.predict(x=image_matrix,batch_size=batch_size)
 
                         return predict_output
@@ -78,16 +76,31 @@ class ArtificalIntelligence:
         elif mode == 'Hastalik-Tespiti':
             if artifical_intelligence_model is not None:
                 if isinstance(artifical_intelligence_model,str):
-                    artifical_intelligence_model = load_model(artifical_intelligence_model)
+                    print(artifical_intelligence_model)
+                    if artifical_intelligence_model == 'models\SoftmaxModel_1\model\SoftmaxClassificationModel.h5':
+                        artifical_intelligence_model = load_model(artifical_intelligence_model)
 
-                if matlike is not None:
-                    try:
-                        image_matrix = image_processing.İmageProcesser().to_matrix(matlike,mode='prediction')
-                        predict_output = artifical_intelligence_model.predict(x=image_matrix,batch_size=batch_size)
+                        if matlike is not None:
+                            try:
+                                image_matrix = image_processing.İmageProcesser().to_matrix(matlike,mode='prediction-resnet50')
+                                predict_output = artifical_intelligence_model.predict(x=image_matrix,batch_size=batch_size)
 
-                        return predict_output
+                                return predict_output,'model_1'
+                            
+                            except Exception as e:
+                                print(e)
+                                return e
                     
-                    except Exception as e:
-                        print(e)
-                        return e
+                    elif artifical_intelligence_model == 'models\SoftmaxModel_2\model\PlantDiseaseClassifier_2.h5':
+                        artifical_intelligence_model = load_model(artifical_intelligence_model)
 
+                        if matlike is not None:
+                            try:
+                                image_matrix = image_processing.İmageProcesser().to_matrix(matlike,mode='prediction-efficientnetb0')
+                                predict_output = artifical_intelligence_model.predict(x=image_matrix,batch_size=batch_size)
+
+                                return predict_output,'model_2'
+                            
+                            except Exception as e:
+                                print(e)
+                                return e
