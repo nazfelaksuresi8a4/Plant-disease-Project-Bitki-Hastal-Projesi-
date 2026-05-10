@@ -798,7 +798,11 @@ class MainGui(QMainWindow):
             pred_type = 0
         
         elif self.change_analysis_mode.currentText().strip() == 'Hastalik-Tespiti':
-            pred_type = 1
+            if self.IPath.split(';')[1].strip() == r'models\SoftmaxModel_2\model\PlantDiseaseClassifier_2.h5':
+                pred_type = 2
+            
+            else:
+                pred_type = 1
 
         if mode is not None and logtype is not None:
             function_status = 1
@@ -855,7 +859,24 @@ class MainGui(QMainWindow):
                     self.plotter_thread.start()
                 
                 elif pred_type == 1:
-                    path = r"logs\SoftmaxModelLogs\datas.txt"
+                    path = r"logs\SoftmaxModelLogs_1\datas.txt"
+
+                    self.plotter_thread = QThread(self)
+                    self.plotter_class = PlotterThreadSide(path,0)
+                    self.plotter_class.moveToThread(self.plotter_thread)
+
+                    self.returner_signal = self.plotter_class.returner_signal
+                    self.returner_signal_e = self.plotter_class.returner_signal_e
+                    self.renderer_signal = self.plotter_classF.renderer_signal
+
+                    self.returner_signal.connect(self.graphPlotter)
+                    #self.renderer_signal.connect(self.Renderer)
+
+                    self.plotter_thread.started.connect(self.plotter_class.referanceFlow)
+                    self.plotter_thread.start()
+
+                elif pred_type == 2:
+                    path = r"logs\SoftmaxModelLogs_2\datas.txt"
 
                     self.plotter_thread = QThread(self)
                     self.plotter_class = PlotterThreadSide(path,0)
